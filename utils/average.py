@@ -1,20 +1,20 @@
 import pandas as pd
-df = pd.read_csv('/home/dsilva/foss_para_arff_calibracao.csv', delimiter=';', decimal=',')
 
-x = df.iloc[:, 2:]
-y = df.iloc[:, 1]
-def make_average(x, y, number_of_repetions):
-    n_samples = x.shape[0]
+def make_average(dataset, number_of_repetions):
+    n_samples = dataset.shape[0]
 
     X_average = pd.DataFrame()
     for index in list(range(0, n_samples, number_of_repetions)):
-        avg_X = x.iloc[index: index + number_of_repetions,:].mean(axis=0)
-        X_average = pd.concat([X_average, avg_X], axis=1)
+        avg_X = dataset.iloc[index: index + number_of_repetions,1:].mean(axis=0)
+        avg_X = dataset.iloc[index:index+1,0].append(avg_X, ignore_index=True)
+        X_average = pd.concat([X_average, avg_X], axis=1, ignore_index=True)
 
 
     
     X_average = X_average.transpose()
     X_average.index = list(range(0, n_samples, number_of_repetions))
+
+    X_average.iloc[:,0] = X_average.iloc[:,0].astype('int')
     
     return X_average
         
