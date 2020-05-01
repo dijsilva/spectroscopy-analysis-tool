@@ -1,11 +1,10 @@
-from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_split
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.metrics import r2_score, mean_squared_error
+from sklearn.metrics import mean_squared_error
 import pandas as pd
 import numpy as np
 
-#df = pd.read_csv('/home/dsilva/foss_para_arff_calibracao.csv', delimiter=';', decimal=',')
+df = pd.read_csv('/home/dsilva/foss_para_arff_calibracao.csv', delimiter=';', decimal=',')
 #df_validacao = pd.read_csv('/home/dsilva/foss_para_arff_validacao.csv', delimiter=';', decimal=',')
 
 
@@ -45,6 +44,8 @@ class PLSR():
 
         x = dataset.iloc[:, 2:]
         y = dataset.iloc[:, 1]
+
+        self.metrics = {}
 
         # checking if the parameters was inserted correctly
         if (not self.split_for_validation == None) and (self.dataset_validation == None):
@@ -89,9 +90,10 @@ class PLSR():
         rmse = mean_squared_error(self._yCal, x_cal_predict, squared=False)
 
         nsamples = self._xCal.shape[0]
-        print(f"MODEL CALIBRATED with {nsamples} samples and {self.components} components")
-        print(f"Coefficiente of determination = {r2_cal:.3f}")
-        print(f"RMSE = {rmse:.3f}")
+
+        calibration_metrics = {'n_samples': nsamples, 'R2': r2_cal, 'RMSE': rmse}
+
+        self.metrics['calibration'] = calibration_metrics        
     
     
     def cross_validate(self):
@@ -102,9 +104,13 @@ class PLSR():
         r2_cv = np.corrcoef(self._yCal, y_cv)[0][1] ** 2
         rmse_cv = mean_squared_error(self._yCal, y_cv, squared=False)
 
-        print("CROSS-VALIDATION COMPLETED:")
-        print(f"Coefficient of determination = {r2_cv:.3f}")
-        print(f"RMSE = {rmse_cv:.3f}")
+        method = 'LOO'
+        if isinstance(self._cv, int):
+            method = 'K-fold'
+
+        cross_validation_metrics = {'R2': r2_cv, 'RMSE': rmse_cv, 'method': method}
+
+        self.metrics['cross_validation'] = cross_validation_metrics
     
 
     def validate(self):
@@ -115,18 +121,30 @@ class PLSR():
         r2_ve = np.corrcoef(self._yVal, y_val)[0][1] ** 2
         rmse_ve = mean_squared_error(self._yVal, y_val, squared=False)
 
-        print("VALIDATION COMPLETED:")
-        print(f"Coefficient of determination = {r2_ve:.3f}")
-        print(f"RMSE = {rmse_ve:.3f}")
+        nsamples = self._xVal.shape[0]
+        predicted_values = np.array(y_val)
+        original_values = np.array(self._yVal)
+        validation = {'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values, 'original_values': original_values}
+
+        self.metrics['validation'] = validation
     
 
     def get_coefs(self, get_intercept=False):
-        """
-        return a array with coefficientes. If get_intercept == True, then intercept is calculated an insert in coefs array at index 0
-        """
+        
+        # return a array with coefficientes. If get_intercept == True, then intercept is calculated 
+        # an insert in coefs array at index 0
+        
         coefs = np.array([coef[0] for coef in self.pls.coef_])
         if get_intercept == True:
-            self.pls.intercept_ = self.pls.y_mean_ - np.dot(self.pls.x_mean_, self.pls.coef_)
-            coefs = np.insert(coefs, 0, self.pls.intercept_)    
+            self.pls._intercept = self.pls.y_mean_ - np.dot(self.pls.x_mean_, self.pls.coef_)
+            coefs = np.insert(coefs, 0, self.pls._intercept)    
 
         return coefs
+    
+    def run_all(self):
+        # this function should be used to calibrate, cross-validate and validate with one command
+
+        self.calibrate()
+        self.cross_validate()
+        self.validate()
+
