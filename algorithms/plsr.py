@@ -5,7 +5,7 @@ from sklearn.metrics import r2_score, mean_squared_error
 import pandas as pd
 import numpy as np
 
-df = pd.read_csv('foss_para_arff_calibracao.csv', delimiter=';', decimal=',')
+df = pd.read_csv('/home/dsilva/home_office/algoritmo_mateus_arff/foss_para_arff_calibracao.csv', delimiter=';', decimal=',')
 #df_validacao = pd.read_csv('foss_para_arff_validacao.csv', delimiter=';', decimal=',')
 
 
@@ -60,7 +60,7 @@ class Plsr():
         else:
             raise ValueError("inser a valid value for define type of cross_validation. This value need be a int for k-fold method ou 'loo' for leave one out cross validation.")
     
-    def train(self):
+    def run(self):
         """
         runs the plsr model with instance of PLSRegression from sklearn
         """        
@@ -68,41 +68,15 @@ class Plsr():
         self.pls = PLSRegression(n_components=self.components, scale=self.scaleOpt)
         self.pls.fit(self._xCal, self._yCal)
 
-        #pls.intercept_ = pls.y_mean_ - np.dot(pls.x_mean_, pls.coef_)
+  
+    def get_coefs(self, get_intercept=False):
+        if get_intercept == True:
+            self.pls.intercept_ = self.pls.y_mean_ - np.dot(self.pls.x_mean_, self.pls.coef_)
+            coefs = np.array([coef[0] for coef in self.pls.coef_])
+            coefs = np.insert(coefs, 0, self.pls.intercept_)
 
-        # y_cv = cross_val_predict(pls, x, y, cv=_cv)
-        # y_cv = [x[0] for x in y_cv]
+            return coefs
+        else:
+            coefs = np.array([coef[0] for coef in self.pls.coef_])
 
-        # y_c = pls.predict(x)
-        # y_c = [x[0] for x in y_c]
-
-        # y_val_pls = pls.predict(x_val)
-        # y_val_pls = [x[0] for x in y_val_pls]
-
-        # # linear model
-        # print("R^2 de cal da regressao linear = {:.4f}".format(r2_linear_cal))
-        # print("RMSE de cal da regressao linear = {:.4f}".format(rmse_linear_cal))
-        # print("R^2 de cv da regressao linear = {:.4f}".format(r2_linear_cv))
-        # print("RMSE de cv da regressao linear = {:.4f}".format(rmse_linear_cv))
-        # print("R^2 de ve da regressao linear = {:.4f}".format(r2_linear_val))
-        # print("RMSE de ve da regressao linear = {:.4f}\n".format(rmse_linear_val))
-
-        # # pls
-        # r2_cal = np.corrcoef(y.values, y_c)[0][1] ** 2
-        # print("R^2 de calibração da PLS = {:.4f}".format(r2_cal))
-        # rmse_cal = mean_squared_error(y.values, y_c)
-        # print("RMSE da calibração da PLS = {:.4f}".format(rmse_cal))
-
-        # #pls cv
-        # r2_pls = np.corrcoef(y.values, y_cv)[0][1] ** 2
-        # print("R^2 de cv da PLS = {:.4f}".format(r2_pls))
-        # rmse_pls = mean_squared_error(y.values, y_cv)
-        # print("RMSE de cv da PLS = {:.4f}".format(rmse_pls))
-
-        # #pls ve
-        # r2_pls_val = np.corrcoef(y_val, y_val_pls)[0][1] ** 2
-        # print("R^2 de val da PLS = {:.4f}".format(r2_pls_val))
-        # rmse_pls_pls = mean_squared_error(y_val, y_val_pls, squared=False)
-        # print("RMSE de val da PLS = {:.4f}".format(rmse_pls_pls))
-    def oi(self):
-        print(self.pls.coef_)
+            return coefs
