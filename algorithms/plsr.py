@@ -5,8 +5,8 @@ from sklearn.metrics import r2_score, mean_squared_error
 import pandas as pd
 import numpy as np
 
-df = pd.read_csv('/home/dsilva/foss_para_arff_calibracao.csv', delimiter=';', decimal=',')
-df_validacao = pd.read_csv('/home/dsilva/foss_para_arff_validacao.csv', delimiter=';', decimal=',')
+#df = pd.read_csv('/home/dsilva/foss_para_arff_calibracao.csv', delimiter=';', decimal=',')
+#df_validacao = pd.read_csv('/home/dsilva/foss_para_arff_validacao.csv', delimiter=';', decimal=',')
 
 
 class PLSR():
@@ -89,7 +89,7 @@ class PLSR():
         rmse = mean_squared_error(self._yCal, x_cal_predict, squared=False)
 
         nsamples = self._xCal.shape[0]
-        print(f"MODEL CALIBRATED with {nsamples} samples")
+        print(f"MODEL CALIBRATED with {nsamples} samples and {self.components} components")
         print(f"Coefficiente of determination = {r2_cal:.3f}")
         print(f"RMSE = {rmse:.3f}")
     
