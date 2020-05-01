@@ -142,6 +142,7 @@ class PLSR():
         return coefs
     
     def run_all(self):
+        
         # this function should be used to calibrate, cross-validate and validate with one command
 
         self.calibrate()
