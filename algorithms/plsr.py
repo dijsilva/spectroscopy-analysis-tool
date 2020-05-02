@@ -1,7 +1,12 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_split
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.metrics import mean_squared_error
-from context import model_validations
+from utils import model_validations, average
+
 import pandas as pd
 import numpy as np
 
@@ -105,13 +110,14 @@ class PLSR():
     
     def cross_validate(self):
         
-        r2_cv, rmse_cv = model_validations.cross_validation(self._pls, self._xCal, self._yCal, cv=self._cv)
+        r2_cv, rmse_cv, predicted_values = model_validations.cross_validation(self._pls, self._xCal, self._yCal, cv=self._cv)
 
         method = 'LOO'
         if isinstance(self._cv, int):
             method = "{}-fold".format(self._cv)
 
-        cross_validation_metrics = {'R2': r2_cv, 'RMSE': rmse_cv, 'method': method}
+        original_values = np.array(self._yCal)
+        cross_validation_metrics = {'R2': r2_cv, 'RMSE': rmse_cv, 'method': method, 'predicted_values': predicted_values, 'original_values': original_values }
 
         self.metrics['cross_validation'] = cross_validation_metrics
     

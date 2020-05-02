@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_split
@@ -76,14 +80,9 @@ class PCR():
 
         # reduce dimensionality of self._xCal with pca and store the components in self._Xreduced
         self._pca = PCA(n_components=self.components, tol=0.0000000001, random_state=self.pcr_random_state)
-        self._linear_regression = LinearRegression()
+        self._linear_regression = LinearRegression(fit_intercept=self.center_in_regression)
 
-
-        if self.center_in_regression == True:
-            self._Xreduced = self._pca.fit_transform(scale(self._xCal, with_mean=True, with_std=True))
-        else:
-            self._Xreduced = self._pca.fit_transform(self._xCal)
-        
+        self._Xreduced = self._pca.fit_transform(scale(self._xCal, with_mean=True, with_std=True))        
 
         self._linear_regression.fit(self._Xreduced, self._yCal)
 
@@ -118,11 +117,7 @@ class PCR():
 
         self._pca_val = PCA(n_components=self.components, tol=0.0000000001, random_state=self.pcr_random_state)
 
-        if self.center_in_regression == True:
-            self._XValReduced = self._pca_val.fit_transform(scale(self._xVal, with_mean=True, with_std=True))
-        else:
-            self._XValReduced = self._pca_val.fit_transform(self._xVal)
-
+        self._XValReduced = self._pca_val.fit_transform(scale(self._xVal, with_mean=True, with_std=True))
         
         r2_ve, rmse_ve, predicted_values = model_validations.external_validation(self._linear_regression, self._XValReduced, self._yVal)
         
@@ -138,10 +133,9 @@ class PCR():
         # return a array with coefficientes. If get_intercept == True, then intercept is calculated 
         # an insert in coefs array at index 0
         
-        coefs = np.array([coef[0] for coef in self._pls.coef_])
+        coefs = self._linear_regression.coef_
         if get_intercept == True:
-            self._pls._intercept = self._pls.y_mean_ - np.dot(self._pls.x_mean_, self._pls.coef_)
-            coefs = np.insert(coefs, 0, self._pls._intercept)    
+            coefs = np.insert(coefs, 0, self._linear_regression.intercept_)    
 
         return coefs
     
