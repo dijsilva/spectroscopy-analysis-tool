@@ -11,9 +11,12 @@ import pandas as pd
 import numpy as np
 
 from utils import model_validations
+<<<<<<< HEAD
 
 df = pd.read_csv('/home/dsilva/teste_pcr/foss_para_arff_calibracao.csv', delimiter=';', decimal=',')
 #df_validacao = pd.read_csv('/home/dsilva/teste_pcr/foss_para_arff_validacao.csv', delimiter=';', decimal=',')
+=======
+>>>>>>> release/add-test-plsr
 
 
 class PCR():
@@ -82,7 +85,8 @@ class PCR():
         self._pca = PCA(n_components=self.components, tol=0.0000000001, random_state=self.pcr_random_state)
         self._linear_regression = LinearRegression(fit_intercept=self.fit_intercept_regression)
 
-        self._Xreduced = self._pca.fit_transform(scale(self._xCal, with_mean=True, with_std=True))        
+
+        self._Xreduced = self._pca.fit_transform(scale(self._xCal, axis=1))
 
         self._linear_regression.fit(self._Xreduced, self._yCal)
 
@@ -117,7 +121,7 @@ class PCR():
 
         self._pca_val = PCA(n_components=self.components, tol=0.0000000001, random_state=self.pcr_random_state)
 
-        self._XValReduced = self._pca_val.fit_transform(scale(self._xVal, with_mean=True, with_std=True))
+        self._XValReduced = self._pca_val.fit_transform(scale(self._xVal, axis=1))
         
         r2_ve, rmse_ve, predicted_values = model_validations.external_validation(self._linear_regression, self._XValReduced, self._yVal)
         
