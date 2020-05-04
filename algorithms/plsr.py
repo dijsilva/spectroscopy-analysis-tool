@@ -44,9 +44,6 @@ class PLSR():
 
         self._cv = None
 
-        x = dataset.iloc[:, 2:]
-        y = dataset.iloc[:, 1]
-
         self.metrics = {}
 
         # checking if the parameters was inserted correctly
@@ -57,6 +54,8 @@ class PLSR():
         if (self.dataset_validation is None) and (self.split_for_validation is None):
             raise ValueError('Should be defined the samples for validation or size of test size for split the dataset.')
 
+        x = dataset.iloc[:, 2:]
+        y = dataset.iloc[:, 1]
         
         if (not self.split_for_validation is None) and (self.dataset_validation is None):
             if isinstance(self.split_for_validation, float):
