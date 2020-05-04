@@ -11,16 +11,22 @@ import pandas as pd
 import numpy as np
 
 from utils import model_validations
+<<<<<<< HEAD
+
+df = pd.read_csv('/home/dsilva/teste_pcr/foss_para_arff_calibracao.csv', delimiter=';', decimal=',')
+#df_validacao = pd.read_csv('/home/dsilva/teste_pcr/foss_para_arff_validacao.csv', delimiter=';', decimal=',')
+=======
+>>>>>>> release/add-test-plsr
 
 
 class PCR():
-    def __init__(self, dataset, components=2, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, center_in_regression=True, pcr_random_state=123):
+    def __init__(self, dataset, components=2, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, fit_intercept_regression=True, pcr_random_state=123):
         self.dataset = dataset
         self.components = components
         self.cross_validation_type = cross_validation_type
         self.split_for_validation = split_for_validation
         self.dataset_validation = dataset_validation
-        self.center_in_regression = center_in_regression
+        self.fit_intercept_regression = fit_intercept_regression
         self.pcr_random_state = pcr_random_state
 
         self._xCal = pd.DataFrame()
@@ -69,7 +75,7 @@ class PCR():
             else:
                 raise ValueError("The cross_validation_type should be a positive integer for k-fold method ou 'loo' for leave one out cross validation.")
 
-        if self.center_in_regression not in [True, False]:
+        if self.fit_intercept_regression not in [True, False]:
             raise ValueError('The scale option should be a boolean.')
     
     
@@ -77,7 +83,7 @@ class PCR():
 
         # reduce dimensionality of self._xCal with pca and store the components in self._Xreduced
         self._pca = PCA(n_components=self.components, tol=0.0000000001, random_state=self.pcr_random_state)
-        self._linear_regression = LinearRegression(fit_intercept=self.center_in_regression)
+        self._linear_regression = LinearRegression(fit_intercept=self.fit_intercept_regression)
 
 
         self._Xreduced = self._pca.fit_transform(scale(self._xCal, axis=1))
