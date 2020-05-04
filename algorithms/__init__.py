@@ -1,4 +1,4 @@
 __all__ = ['PCR', 'PLSR']
 
-from .pcr import PCR
-from .plsr import PLSR
+from algorithms.pcr import PCR
+from algorithms.plsr import PLSR
