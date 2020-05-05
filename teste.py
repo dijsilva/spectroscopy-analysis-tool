@@ -20,11 +20,13 @@ import matplotlib.pyplot as plt
 
 
 #classification
-df = pd.read_csv('/home/dsilva/teste_pcr/espectros_frutos_polpa.csv', sep=';', decimal=',')
+df = pd.read_csv('/home/dsilva/teste_pcr/espectros_todos_os_frutos_polpa.csv', sep=';', decimal=',')
+df1 = pd.read_csv('/home/dsilva/teste_pcr/espectros_frutos_polpa.csv', sep=';', decimal=',')
 
 #df_snv = snv(df)
 
-lda = PCA_LDA(df, 9)
+lda = PCA_LDA(df1, 9)
 lda.create_model()
+a = lda.plot_confusion_matrix()
 
 
