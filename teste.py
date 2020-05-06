@@ -1,8 +1,8 @@
 from algorithms.regression import PCR
 from algorithms.classification import PCA_LDA
-from transformations import snv
+from transformations import snv, sg
 import pandas as pd
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 # regression
 #df = pd.read_csv('/home/dsilva/teste_pcr/foss_para_arff_calibracao.csv', sep=';', decimal=',')
@@ -23,10 +23,9 @@ import matplotlib.pyplot as plt
 df = pd.read_csv('/home/dsilva/teste_pcr/espectros_todos_os_frutos_polpa.csv', sep=';', decimal=',')
 df1 = pd.read_csv('/home/dsilva/teste_pcr/espectros_frutos_polpa.csv', sep=';', decimal=',')
 
-#df_snv = snv(df)
+df_sg = snv(df1)
 
-lda = PCA_LDA(df1, 9)
+lda = PCA_LDA(df_sg, 14, 'loo', 'all')
 lda.create_model()
-a = lda.plot_confusion_matrix()
 
 

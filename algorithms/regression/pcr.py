@@ -101,8 +101,7 @@ class PCR():
             method = "{}-fold".format(self._cv)
 
 
-        original_values = np.array(self._yCal)
-        cross_validation_metrics = {'R2': r2_cv, 'RMSE': rmse_cv, 'method': method, 'predicted_values': predicted_values, 'original_values': original_values}
+        cross_validation_metrics = {'R2': r2_cv, 'RMSE': rmse_cv, 'method': method, 'predicted_values': predicted_values}
 
         self.metrics['cross_validation'] = cross_validation_metrics
     
@@ -115,9 +114,8 @@ class PCR():
         
         r2_ve, rmse_ve, predicted_values = external_validation(self._linear_regression, self._XValReduced, self._yVal)
         
-        original_values = np.array(self._yVal)
         nsamples = self._xVal.shape[0]
-        validation = {'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values, 'original_values': original_values}
+        validation = {'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values}
 
         self.metrics['validation'] = validation
     
