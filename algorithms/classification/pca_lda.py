@@ -112,13 +112,12 @@ class PCA_LDA():
 
         self.xValReduced = self._pca_val.fit_transform(self._xVal)
 
-        accuracy, cm, predicted_values = classifier_external_validation(self._pca_val, self.xValReduced, self._yVal)
+        accuracy, cm, predicted_values = classifier_external_validation(self._lda, self.xValReduced, self._yVal)
 
         nsamples = self._xVal.shape[0]
-        validation = {'accuracy': accuracy, 'matrix_confusion': cm, 'n_samples': nsamples, 'predicted_values': predicted_values}
+        validation = {'accuracy': accuracy, 'confusion_matrix': cm, 'n_samples': nsamples, 'predicted_values': predicted_values}
 
-        self.metrics['validation'] = validation        
-        
+        self.metrics['validation'] = validation
     
     def plot_confusion_matrix(self, cm, title='Confusion Matrix', cbar=True):
         sn.heatmap(cm, annot=True, cmap='Greys', linewidths=0.7, linecolor='black', cbar=cbar, square=True, fmt='g')
@@ -133,3 +132,4 @@ class PCA_LDA():
         
         self.calibrate()
         self.cross_validate()
+        self.validate()

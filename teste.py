@@ -21,11 +21,11 @@ import pandas as pd
 
 #classification
 df = pd.read_csv('/home/dsilva/teste_pcr/espectros_todos_os_frutos_polpa.csv', sep=';', decimal=',')
-df1 = pd.read_csv('/home/dsilva/teste_pcr/espectros_frutos_polpa.csv', sep=';', decimal=',')
+df1 = pd.read_csv('/home/dsilva/teste_pcr/espectros_frutos_polpa1.csv', sep=';', decimal=',')
 
-df_sg = snv(df1)
+#df_sg = snv(df1)
 
-lda = PCA_LDA(df_sg, 14, 'loo', 'all')
+lda = PCA_LDA(df, 14, 'loo', 'all', data_validation=df1)
 lda.create_model()
 
 

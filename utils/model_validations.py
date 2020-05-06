@@ -56,9 +56,9 @@ def classifier_external_validation(model, x, y):
 
     cm = pd.DataFrame(matrix)
 
-    index_columns = y.value_counts().sort_index(axis=0).index
-    cm.index = index_columns
-    cm.columns = index_columns
+    #index_columns = y.value_counts().sort_index(axis=0).index
+    #cm.index = index_columns
+    #cm.columns = index_columns
 
     predicted_values = np.array(predictions)
 
