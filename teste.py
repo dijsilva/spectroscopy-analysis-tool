@@ -1,7 +1,8 @@
 from algorithms.regression import PCR
 from algorithms.classification import PCA_LDA
-from transformations import snv, sg
+from transformations import snv, sg, msc
 import pandas as pd
+from utils import make_average
 # import matplotlib.pyplot as plt
 
 # regression
@@ -20,12 +21,4 @@ import pandas as pd
 
 
 #classification
-df = pd.read_csv('/home/dsilva/teste_pcr/espectros_todos_os_frutos_polpa.csv', sep=';', decimal=',')
-df1 = pd.read_csv('/home/dsilva/teste_pcr/espectros_frutos_polpa1.csv', sep=';', decimal=',')
-
-#df_sg = snv(df1)
-
-lda = PCA_LDA(df, 14, 'loo', 'all', data_validation=df1)
-lda.create_model()
-
-
+df = pd.read_csv('/home/dsilva/teste_pcr/espectros_frutos_polpa.csv', sep=';', decimal=',')
