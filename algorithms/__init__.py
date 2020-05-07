@@ -1,4 +1,4 @@
-__all__ = ['PCR', 'PLSR']
+__all__ = ['classification', 'regression']
 
-from algorithms.pcr import PCR
-from algorithms.plsr import PLSR
+import algorithms.classification as classification
+import algorithms.regression as regression
