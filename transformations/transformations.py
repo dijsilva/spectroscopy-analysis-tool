@@ -120,16 +120,19 @@ def sg(dataset, differentiation, window_size, polynominal_order=4, spectra_start
 
     return df
 
-def plus_sg(dataset, transformation, differentiation, window_size, polynominal_order=4, spectra_start=2):
+def plus_sg(dataset, sg_first, transformation, differentiation, window_size, polynominal_order=4, spectra_start=2):
     
     """
     Apply the Savitzky-Golay filter after apply SNV transformation.
         - the dataset should be a dataframe
+        - sg_first should be a boolean value. True if sg should  be performed before the additional transformation
         - differentiation is the derivative order
         - window_size is a window size (must be odd).
         - polynominal_order for equation
     """
 
+    if sg_first not in [True, False]:
+        raise ValueError('sg_first should be a boolean value')
     if not isinstance(dataset, pd.DataFrame):
         raise ValueError('dataset should be a pandas dataframe')
     if type(differentiation) not in [int]:

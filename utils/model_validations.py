@@ -52,13 +52,12 @@ def classifier_external_validation(model, x, y):
     predictions = model.predict(x)
 
     accuracy = accuracy_score(y, predictions)
-    matrix = confusion_matrix(y, predictions)
+    matrix = confusion_matrix(y, predictions, labels=model.classes_)
 
     cm = pd.DataFrame(matrix)
 
-    #index_columns = y.value_counts().sort_index(axis=0).index
-    #cm.index = index_columns
-    #cm.columns = index_columns
+    cm.index = model.classes_
+    cm.columns = model.classes_
 
     predicted_values = np.array(predictions)
 
