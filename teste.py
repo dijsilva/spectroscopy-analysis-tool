@@ -22,3 +22,9 @@ from utils import make_average
 
 #classification
 df = pd.read_csv('/home/dsilva/teste_pcr/espectros_frutos_polpa.csv', sep=';', decimal=',')
+df_test = pd.read_csv('/home/dsilva/teste_pcr/espectros_frutos_polpa1.csv', sep=';', decimal=',')
+
+df_average = make_average(df, 3, 2)
+#df_test_average = make_average(df_test, 2)
+
+#lda = PCA_LDA(df_average, 14, 'loo', data_validation=df_test_average)

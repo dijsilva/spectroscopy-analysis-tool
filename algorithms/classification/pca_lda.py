@@ -68,12 +68,12 @@ class PCA_LDA():
         
         if self.equal_probabilites == True:
             n_class = len(self._yCal.unique())
-            self.priors = np.full((n_class, ),  1 / n_class)
+            priors = np.full((n_class, ),  1 / n_class)
         else:
-            self.priors = self._yCal.value_counts(normalize=True)
-            self.priors = np.array(self.priors.sort_index(axis=0))
+            priors = self._yCal.value_counts(normalize=True)
+            priors = np.array(priors.sort_index(axis=0))
 
-        self._lda = LinearDiscriminantAnalysis(n_components=self.number_of_components, tol=1e-8, priors=self.priors)
+        self._lda = LinearDiscriminantAnalysis(n_components=self.number_of_components, tol=1e-8, priors=priors)
 
         self._lda.fit(self._xReduced, self._yCal)
 
@@ -89,7 +89,7 @@ class PCA_LDA():
 
         n_samples = self._yCal.shape[0]
 
-        calibration_metrics = {'accuracy': accuracy, 'confusion_matrix': cm, 'n_samples': n_samples, 'n_components': self.number_of_components, 'priors': self.priors}
+        calibration_metrics = {'accuracy': accuracy, 'confusion_matrix': cm, 'n_samples': n_samples, 'n_components': self.number_of_components, 'priors': priors}
 
         self.metrics['calibration'] = calibration_metrics
     
