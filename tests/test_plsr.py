@@ -3,7 +3,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from pandas.testing import assert_frame_equal
-from algorithms import PLSR
+from algorithms.regression import PLSR
 import unittest
 import pandas as pd
 import numpy as np

@@ -9,15 +9,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import scale
 import pandas as pd
 import numpy as np
-
-from utils import model_validations
-<<<<<<< HEAD
-
-df = pd.read_csv('/home/dsilva/teste_pcr/foss_para_arff_calibracao.csv', delimiter=';', decimal=',')
-#df_validacao = pd.read_csv('/home/dsilva/teste_pcr/foss_para_arff_validacao.csv', delimiter=';', decimal=',')
-=======
->>>>>>> release/add-test-plsr
-
+from utils import external_validation, cross_validation
 
 class PCR():
     def __init__(self, dataset, components=2, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, fit_intercept_regression=True, pcr_random_state=123):
@@ -33,12 +25,8 @@ class PCR():
         self._xVal = pd.DataFrame()
         self._yCal = pd.DataFrame()
         self._yVal = pd.DataFrame()
-        self._predictions = pd.DataFrame()
 
         self._cv = None
-
-        x = dataset.iloc[:, 2:]
-        y = dataset.iloc[:, 1]
 
         self.metrics = {}
 
@@ -50,7 +38,9 @@ class PCR():
         if (self.dataset_validation is None) and (self.split_for_validation is None):
             raise ValueError('Should be defined the samples for validation or size of test size for split the dataset.')
 
-
+        x = dataset.iloc[:, 2:]
+        y = dataset.iloc[:, 1]
+        
         if (not self.split_for_validation is None) and (self.dataset_validation is None):
             if isinstance(self.split_for_validation, float):
                 self._xCal, self._xVal, self._yCal, self._yVal = train_test_split(x, y, test_size=split_for_validation, random_state=pcr_random_state)
@@ -82,7 +72,7 @@ class PCR():
     def calibrate(self):
 
         # reduce dimensionality of self._xCal with pca and store the components in self._Xreduced
-        self._pca = PCA(n_components=self.components, tol=0.0000000001, random_state=self.pcr_random_state)
+        self._pca = PCA(n_components=self.components, tol=0.0000000001, random_state=self.pcr_random_state, svd_solver="full")
         self._linear_regression = LinearRegression(fit_intercept=self.fit_intercept_regression)
 
 
@@ -104,30 +94,28 @@ class PCR():
     
     def cross_validate(self):
 
-        r2_cv, rmse_cv, predicted_values = model_validations.cross_validation(self._linear_regression, self._Xreduced, self._yCal, cv=self._cv)
+        r2_cv, rmse_cv, predicted_values = cross_validation(self._linear_regression, self._Xreduced, self._yCal, cv=self._cv)
 
         method = 'LOO'
         if isinstance(self._cv, int):
             method = "{}-fold".format(self._cv)
 
 
-        original_values = np.array(self._yCal)
-        cross_validation_metrics = {'R2': r2_cv, 'RMSE': rmse_cv, 'method': method, 'predicted_values': predicted_values, 'original_values': original_values}
+        cross_validation_metrics = {'R2': r2_cv, 'RMSE': rmse_cv, 'method': method, 'predicted_values': predicted_values}
 
         self.metrics['cross_validation'] = cross_validation_metrics
     
     
     def validate(self):
 
-        self._pca_val = PCA(n_components=self.components, tol=0.0000000001, random_state=self.pcr_random_state)
+        self._pca_val = PCA(n_components=self.components, tol=0.0000000001, random_state=self.pcr_random_state, svd_solver="full")
 
         self._XValReduced = self._pca_val.fit_transform(scale(self._xVal, axis=1))
         
-        r2_ve, rmse_ve, predicted_values = model_validations.external_validation(self._linear_regression, self._XValReduced, self._yVal)
+        r2_ve, rmse_ve, predicted_values = external_validation(self._linear_regression, self._XValReduced, self._yVal)
         
-        original_values = np.array(self._yVal)
         nsamples = self._xVal.shape[0]
-        validation = {'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values, 'original_values': original_values}
+        validation = {'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values}
 
         self.metrics['validation'] = validation
     

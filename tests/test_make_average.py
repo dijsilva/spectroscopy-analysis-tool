@@ -16,7 +16,7 @@ class TestMakeAverage(unittest.TestCase):
     
     df = pd.DataFrame({'id': [1, 2], 'chemical': [2.91, 2.91], 1: [3.0, 5.0], 2: [4.0, 8.0], 3: [2.0, 2.0], 4: [3.0, 7.0]})
     df_averaged = pd.DataFrame({'id': [1], 'chemical': [2.91], 1: [4.0], 2: [6.0], 3: [2.0], 4: [5.0]})
-    result = average.make_average(df, 2)
+    result = average.make_average(df, 2, 2)
 
     assert_frame_equal(result, df_averaged)
   
@@ -27,11 +27,7 @@ class TestMakeAverage(unittest.TestCase):
     test2 = 0
     test3 = True
 
-    self.assertRaises(ValueError, average.make_average, test1, 2)
-    self.assertRaises(ValueError, average.make_average, test2, 2)
-    self.assertRaises(ValueError, average.make_average, test3, 2)
-    self.assertRaises(ValueError, average.make_average, df, test1)
-    self.assertRaises(ValueError, average.make_average, df, test2)
-    self.assertRaises(ValueError, average.make_average, df, test3)
-
-
+    self.assertRaises(ValueError, average.make_average, test1, 2, 2)
+    self.assertRaises(ValueError, average.make_average, test1, 2, test1)
+    self.assertRaises(ValueError, average.make_average, test2, 2, test2)
+    self.assertRaises(ValueError, average.make_average, test3, 2, test3)
