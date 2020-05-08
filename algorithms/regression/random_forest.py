@@ -7,13 +7,14 @@ import numpy as np
 from utils import cross_validation, external_validation
 
 class RandomForest():
-    def __init__(self, dataset, estimators=100, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, rf_random_state=1):
+    def __init__(self, dataset, estimators=100, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, rf_random_state=1, max_features_rf='auto'):
         self.dataset = dataset
         self.estimators = estimators
         self.cross_validation_type = cross_validation_type
         self.split_for_validation = split_for_validation
         self.dataset_validation = dataset_validation
         self._rf_random_state = rf_random_state
+        self.max_features_rf = max_features_rf
 
         self._xCal = pd.DataFrame()
         self._xVal = pd.DataFrame()
@@ -63,7 +64,7 @@ class RandomForest():
 
     def calibrate(self):
         
-        self._rf = RandomForestRegressor(n_estimators=self.estimators, random_state=self._rf_random_state)
+        self._rf = RandomForestRegressor(n_estimators=self.estimators, random_state=self._rf_random_state, max_features=self.max_features_rf)
 
         self._rf.fit(self._xCal, self._yCal)
 
