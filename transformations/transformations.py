@@ -98,6 +98,17 @@ def sg(dataset, differentiation, window_size, polynominal_order=4, spectra_start
         - polynominal_order for equation
     """
 
+    if not isinstance(dataset, pd.DataFrame):
+        raise ValueError('dataset should be a pandas dataframe')
+    if type(differentiation) not in [int]:
+        raise ValueError('differentiation should be a integer')
+    if type(window_size) not in [int]:
+        raise ValueError('window_size should be a integer')
+    if type(polynominal_order) not in [int]:
+        raise ValueError('polynominal_order should be a integer')
+    if type(spectra_start) not in [int]:
+        raise ValueError('spectra_start should be a integer that reference a column')
+
     df = dataset.copy()
 
     sg_df = savgol_filter(df.iloc[:, spectra_start:], window_length=window_size, polyorder=polynominal_order, deriv=differentiation, axis=-1)
@@ -143,24 +154,13 @@ def plus_sg(dataset, sg_first, transformation, differentiation, window_size, pol
         raise ValueError('polynominal_order should be a integer')
     if type(spectra_start) not in [int]:
         raise ValueError('spectra_start should be a integer that reference a column')
-
-    df = transformation(dataset)
-    snv_sg_df = savgol_filter(df.iloc[:, spectra_start:], window_length=window_size, polyorder=polynominal_order, deriv=differentiation, axis=-1)
-
-    sg_df = pd.DataFrame(snv_sg_df)
-
-    sg_df.columns = df.iloc[:, spectra_start:].columns
-    sg_df.index = df.iloc[:, spectra_start:].index
-
-    df.iloc[:, spectra_start:] = sg_df.iloc[:, spectra_start:]
-
-    gap = window_size // 2
     
-    columns_sg = list(sg_df.iloc[:,gap:-gap].columns)
-    columns_dataset = list(df.iloc[:,spectra_start:].columns)
+    df = dataset.copy()
+    if sg_first == True:
+        df_first = sg(df, differentiation, window_size, polynominal_order, spectra_start)
+        df_transformed = transformation(df_first)
+    else:
+        df_first = transformation(df)
+        df_transformed = sg(df_first, differentiation, window_size, polynominal_order, spectra_start)
 
-    columns_for_drop = list(set(columns_dataset) - set(columns_sg))
-
-    df = df.drop(columns_for_drop, axis=1)
-
-    return df
+    return df_transformed

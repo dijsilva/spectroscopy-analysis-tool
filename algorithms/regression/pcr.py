@@ -1,7 +1,3 @@
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_split
@@ -34,6 +30,9 @@ class PCR():
 
         if not isinstance(self.dataset, pd.DataFrame):
             raise ValueError('The dataset should be a pd.DataFrame.')
+
+        if type(self.components) not in [int]:
+            raise ValueError('components should be a integer')
 
         if (self.dataset_validation is None) and (self.split_for_validation is None):
             raise ValueError('Should be defined the samples for validation or size of test size for split the dataset.')

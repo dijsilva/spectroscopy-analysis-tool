@@ -1,15 +1,18 @@
 from sklearn.model_selection import cross_val_predict
-from sklearn.metrics import mean_squared_error, accuracy_score, confusion_matrix
+from sklearn.metrics import mean_squared_error, accuracy_score, confusion_matrix, r2_score
 import numpy as np
 import pandas as pd
 
 
-def cross_validation(model, x, y, cv):
+def cross_validation(model, x, y, cv, correlation_based=True):
     y_cv = cross_val_predict(model, x, y, cv=cv)
     if len(y_cv.shape) == 2:
         y_cv = [i[0] for i in y_cv]
 
-    r2 = np.corrcoef(y, y_cv)[0][1] ** 2
+    if correlation_based == True:
+        r2 = np.corrcoef(y, y_cv)[0][1] ** 2
+    else:
+        r2 = r2_score(y, y_cv)
     rmse = mean_squared_error(y, y_cv, squared=False)
 
     predicted_values = np.array(y_cv)
@@ -33,13 +36,16 @@ def classifier_cross_validation(model, x, y, cv):
     return (accuracy, cm, predicted_values)
 
 
-def external_validation(model, x, y):
+def external_validation(model, x, y, correlation_based=True):
     y_val = model.predict(x)
 
     if len(y_val.shape) == 2:
         y_val = [i[0] for i in y_val]
-
-    r2_ve = np.corrcoef(y, y_val)[0][1] ** 2
+    
+    if correlation_based == True:
+        r2_ve = np.corrcoef(y, y_val)[0][1] ** 2
+    else:
+        r2_ve = r2_score(y, y_val)
     rmse_ve = mean_squared_error(y, y_val, squared=False)
 
     predicted_values = np.array(y_val)
