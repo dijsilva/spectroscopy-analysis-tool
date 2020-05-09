@@ -70,7 +70,7 @@ class RandomForest():
 
         y_cal_predict = self._rf.predict(self._xCal)
         
-        r2_cal = np.corrcoef(y_cal_predict, self._yCal)[0][1] ** 2
+        r2_cal = self._rf.score(self._xCal, self._yCal)
         rmse = mean_squared_error(self._yCal, y_cal_predict, squared=False)
 
         nsamples = self._xCal.shape[0]
@@ -82,7 +82,7 @@ class RandomForest():
 
     def cross_validate(self):
         
-        r2_cv, rmse_cv, predicted_values = cross_validation(self._rf, self._xCal, self._yCal, self._cv)
+        r2_cv, rmse_cv, predicted_values = cross_validation(self._rf, self._xCal, self._yCal, self._cv, correlation_based=False)
 
         method = 'LOO'
         if isinstance(self._cv, int):
@@ -94,7 +94,7 @@ class RandomForest():
     
     def validate(self):
 
-        r2_ve, rmse_ve, predicted_values = external_validation(self._rf, self._xVal, self._yVal)
+        r2_ve, rmse_ve, predicted_values = external_validation(self._rf, self._xVal, self._yVal, correlation_based=False)
 
         nsamples = self._xVal.shape[0]
         validation = {'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values}
