@@ -1,5 +1,5 @@
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_split, KFold, RandomizedSearchCV
+from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_split, KFold, GridSearchCV
 from sklearn.metrics import mean_squared_error, r2_score
 import pandas as pd
 import numpy as np
@@ -8,17 +8,18 @@ from utils import cross_validation, external_validation
 
 class RandomForest():
     def __init__(self, dataset, estimators=100, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, rf_random_state=1, 
-                max_features_rf='auto', rf_max_deph=None, rf_min_samples_leaf=1, rf_min_samples_split=2):
+                max_features_rf='auto', rf_max_depth=None, rf_min_samples_leaf=1, rf_min_samples_split=2, rf_Bootstrap=True):
         self.dataset = dataset
-        self.estimators = estimators
+        self.n_estimators = estimators
         self.cross_validation_type = cross_validation_type
         self.split_for_validation = split_for_validation
         self.dataset_validation = dataset_validation
         self._rf_random_state = rf_random_state
-        self.rf_max_features_rf = max_features_rf
-        self.rf_max_deph = rf_max_deph
-        self.rf_min_samples_leaf = rf_min_samples_leaf
-        self.rf_min_samples_split = rf_min_samples_split
+        self.max_features = max_features_rf
+        self.max_depth = rf_max_depth
+        self.min_samples_leaf = rf_min_samples_leaf
+        self.min_samples_split = rf_min_samples_split
+        self.bootstrap = rf_Bootstrap
 
         self._xCal = pd.DataFrame()
         self._xVal = pd.DataFrame()
@@ -67,18 +68,15 @@ class RandomForest():
             raise ValueError("The cross_validation_type should be a positive integer for k-fold method ou 'loo' for leave one out cross validation.")
     
 
-    def search_hyperparameters(self, estimators=[200, 1000, 100], max_features=['auto', 'sqrt'], max_depth=[10, 110, 11], 
-                      min_samples_split=[2, 5, 10, 20], min_samples_leaf=[1, 2, 4, 6], bootstrap_opt=[True, False], 
-                      n_interation=100, n_processors=-1, verbose_opt=0):
-
+    def search_hyperparameters(self, estimators=[100, 1000], max_features=['sqrt'], max_depth=[10, 110], 
+                      min_samples_split=[2], min_samples_leaf=[1], bootstrap=[True], 
+                      n_processors=1, verbose=0):
         
-        n_estimators = [int(x) for x in np.linspace(start = estimators[0], stop = estimators[1], num = estimators[2])]
-        max_features = ['auto', 'sqrt']
-        max_depth = [int(x) for x in np.linspace(max_depth[0], max_depth[1], num = max_depth[2])]
+        stop_value = lambda list_of_values: 10 if (len(list_of_values) < 3) else list_of_values[2]
+        
+        n_estimators = [int(x) for x in np.linspace(start = estimators[0], stop = estimators[1], num = stop_value(estimators))]
+        max_depth = [int(x) for x in np.linspace(max_depth[0], max_depth[1], num = stop_value(max_depth))]
         max_depth.append(None)
-        min_samples_split = min_samples_split
-        min_samples_leaf = min_samples_leaf
-        bootstrap = bootstrap_opt
 
 
         random_grid = { "n_estimators": n_estimators,
@@ -86,34 +84,45 @@ class RandomForest():
                         "max_depth": max_depth,
                         "min_samples_split": min_samples_split,
                         "min_samples_leaf": min_samples_leaf,
-                        "bootstrap": bootstrap 
+                        "bootstrap": bootstrap                         
                        }
     
         rf = RandomForestRegressor()
 
-        rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid, n_iter = n_interation, cv = self._cv, 
-                                       random_state=self._rf_random_state, n_jobs = n_processors, verbose=verbose_opt)
-        if verbose_opt == 0:
+        rf_random = GridSearchCV(estimator = rf, param_grid = random_grid, cv = self._cv, n_jobs = n_processors, verbose=verbose)
+        
+        if verbose == 0:
             print('Running...')
         
         rf_random.fit(self._xCal, self._yCal)
 
+        get_params = lambda dict_params, param, default_params: dict_params[param] if (param in dict_params) else default_params
+        
+        self._best_params = rf_random.best_params_
+        self.n_estimators = get_params(rf_random.best_params_, 'n_estimators', self.n_estimators)
+        self.max_features = get_params(rf_random.best_params_, 'max_features', self.max_features)
+        self.max_depth = get_params(rf_random.best_params_, 'max_depth', self.max_depth)
+        self.min_samples_leaf = get_params(rf_random.best_params_, 'min_samples_leaf', self.min_samples_leaf)
+        self.min_samples_split = get_params(rf_random.best_params_, 'min_samples_split', self.min_samples_split)
+        self.bootstrap = get_params(rf_random.best_params_, 'bootstrap', self.bootstrap)
+
     def calibrate(self):
         
-        self._rf = RandomForestRegressor(n_estimators=self.estimators, random_state=self._rf_random_state, 
-                                         max_features=self.rf_max_features_rf, max_depth=self.rf_max_deph, min_samples_leaf=self.rf_min_samples_leaf, 
-                                         min_samples_split=self.rf_min_samples_split)
+        self._rf = RandomForestRegressor(n_estimators=self.n_estimators, random_state=self._rf_random_state, 
+                                         max_features=self.max_features, max_depth=self.max_depth, min_samples_leaf=self.min_samples_leaf, 
+                                         min_samples_split=self.min_samples_split, bootstrap=self.bootstrap)
 
         self._rf.fit(self._xCal, self._yCal)
 
         y_cal_predict = self._rf.predict(self._xCal)
-        
+
+        r_correlation = np.corrcoef(self._yCal, y_cal_predict)[0][1]
         r2_cal = self._rf.score(self._xCal, self._yCal)
         rmse = mean_squared_error(self._yCal, y_cal_predict, squared=False)
 
         nsamples = self._xCal.shape[0]
 
-        calibration_metrics = {'n_samples': nsamples, 'R2': r2_cal, 'RMSE': rmse}
+        calibration_metrics = {'n_samples': nsamples, 'R': r_correlation, 'R2': r2_cal, 'RMSE': rmse}
 
         self.metrics['calibration'] = calibration_metrics  
     
@@ -121,22 +130,22 @@ class RandomForest():
 
     def cross_validate(self):
         
-        r2_cv, rmse_cv, predicted_values = cross_validation(self._rf, self._xCal, self._yCal, self._cv, correlation_based=False)
+        r_correlation, r2_cv, rmse_cv, predicted_values = cross_validation(self._rf, self._xCal, self._yCal, self._cv, correlation_based=False)
 
         method = 'LOO'
-        if isinstance(self._cv, int):
+        if isinstance(self._cv, KFold):
             method = "{}-fold".format(self._cv)
         
-        cross_validation_metrics = {'R2': r2_cv, 'RMSE': rmse_cv, 'method': method, 'predicted_values': predicted_values }
+        cross_validation_metrics = {'R': r_correlation, 'R2': r2_cv, 'RMSE': rmse_cv, 'method': method, 'predicted_values': predicted_values }
         
         self.metrics['cross_validation'] = cross_validation_metrics
     
     def validate(self):
 
-        r2_ve, rmse_ve, predicted_values = external_validation(self._rf, self._xVal, self._yVal, correlation_based=False)
+        r_correlation, r2_ve, rmse_ve, predicted_values = external_validation(self._rf, self._xVal, self._yVal, correlation_based=False)
 
         nsamples = self._xVal.shape[0]
-        validation = {'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values}
+        validation = {'R': r_correlation, 'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values}
 
         self.metrics['validation'] = validation
 
