@@ -3,6 +3,8 @@ from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_s
 from sklearn.metrics import mean_squared_error, r2_score
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
 from utils import cross_validation, external_validation
 
@@ -154,3 +156,47 @@ class RandomForest():
         self.calibrate()
         self.cross_validate()
         self.validate()
+    
+    def save_results(self, path, out_table=False, plots=False):
+        with open(f"{path}/random_forest_results.txt", 'w') as out:
+            out.write('==== Information of model ====\n\n')
+            for parameter in self._rf.get_params():
+                out.write(f"{parameter} = {self._rf.get_params()[parameter]}\n")
+            out.write('\n')
+            
+            out.write('==== Calibration ====\n')
+            out.write(f"n_samples = {self.metrics['calibration']['n_samples']}\n")
+            out.write(f"Coefficiente of correlation (R) = {self.metrics['calibration']['R']:.5f}\n")
+            out.write(f"Coefficient of determination (R2) = {self.metrics['calibration']['R2']:.5f}\n")
+            out.write(f"Root mean squared error (RMSE) = {self.metrics['calibration']['RMSE']:.5f}\n\n")
+
+            out.write('==== Cross-validation ====\n')
+            try:
+                out.write(f"Coefficiente of correlation (R) = {self.metrics['cross_validation']['R']:.5f}\n")
+                out.write(f"Coefficient of determination (R2) = {self.metrics['cross_validation']['R2']:.5f}\n")
+                out.write(f"Root mean squared error (RMSE) = {self.metrics['cross_validation']['RMSE']:.5f}\n\n")
+            except:
+                out.write('Cross-validation not performed.\n\n')
+            
+            out.write('==== Cross-validation ====\n')
+            try:
+                out.write(f"n_samples = {self.metrics['validation']['n_samples']}\n")
+                out.write(f"Coefficiente of correlation (R) = {self.metrics['validation']['R']:.5f}\n")
+                out.write(f"Coefficient of determination (R2) = {self.metrics['validation']['R2']:.5f}\n")
+                out.write(f"Root mean squared error (RMSE) = {self.metrics['validation']['RMSE']:.5f}\n\n")
+            except:
+                out.write('Prediction not performed.\n\n')
+        
+        
+        if plots == True:
+            with PdfPages(f"{path}/random_forest_results.pdf") as pdf:
+                fig = plt.figure(figsize=(12.0, 9.0))
+                gs = gridspec.GridSpec(2,4)
+
+                ax1.plot(self._rf.feature_importances_)
+                ax1 = fig.add_subplot(gs[0,:4])
+                ax1.set_ylabel('Important Variables')
+                plt.figure(figsize=(3, 3))
+                ax1.set_xlabel('Wavelength')
+                pdf.savefig()  # saves the current figure into a pdf page
+                plt.close()
