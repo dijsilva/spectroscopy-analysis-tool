@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib import gridspec
 
 from utils import cross_validation, external_validation
 
@@ -134,9 +135,9 @@ class RandomForest():
         
         r_correlation, r2_cv, rmse_cv, predicted_values = cross_validation(self._rf, self._xCal, self._yCal, self._cv, correlation_based=False)
 
-        method = 'LOO'
+        method = 'Leave One Out'
         if isinstance(self._cv, KFold):
-            method = "{}-fold".format(self._cv)
+            method = "{}-fold".format(self._cv.n_splits)
         
         cross_validation_metrics = {'R': r_correlation, 'R2': r2_cv, 'RMSE': rmse_cv, 'method': method, 'predicted_values': predicted_values }
         
@@ -172,6 +173,7 @@ class RandomForest():
 
             out.write('==== Cross-validation ====\n')
             try:
+                out.write(f"Cross-validation type: {self.metrics['cross_validation']['method']}\n")
                 out.write(f"Coefficiente of correlation (R) = {self.metrics['cross_validation']['R']:.5f}\n")
                 out.write(f"Coefficient of determination (R2) = {self.metrics['cross_validation']['R2']:.5f}\n")
                 out.write(f"Root mean squared error (RMSE) = {self.metrics['cross_validation']['RMSE']:.5f}\n\n")
@@ -190,13 +192,30 @@ class RandomForest():
         
         if plots == True:
             with PdfPages(f"{path}/random_forest_results.pdf") as pdf:
-                fig = plt.figure(figsize=(12.0, 9.0))
-                gs = gridspec.GridSpec(2,4)
-
+                fig = plt.figure(figsize=(16, 12), dpi=100)
+                gs = gridspec.GridSpec(2,2)
+                
+                ax1 = fig.add_subplot(gs[0,:2])
                 ax1.plot(self._rf.feature_importances_)
-                ax1 = fig.add_subplot(gs[0,:4])
-                ax1.set_ylabel('Important Variables')
-                plt.figure(figsize=(3, 3))
-                ax1.set_xlabel('Wavelength')
+                ax1.set_ylabel('Importance')
+                ax1.set_xlabel('Variabble')
+                ax1.set_title('Importance of variables')
+ 
+
+                ax2 = fig.add_subplot(gs[1, 0])
+                ax2.scatter(self._yCal, self.metrics['cross_validation']['predicted_values'])
+                ax2.set_ylabel('Predicted')
+                ax2.set_xlabel('Reference')
+                ax2.set_title('Cross-validation')
+
+                ax3 = fig.add_subplot(gs[1, 1])
+                ax3.scatter(self._yVal, self.metrics['validation']['predicted_values'])
+                ax3.set_title('Prediction')
+                ax3.set_ylabel('Predicted')
+                # plt.figure(figsize=(3, 3))
+                ax3.set_xlabel('Reference')
+                plt.tight_layout(pad=1.0)
                 pdf.savefig()  # saves the current figure into a pdf page
                 plt.close()
+
+                
