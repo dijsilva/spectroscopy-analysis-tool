@@ -6,12 +6,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib import gridspec
+import os
 
 from utils import cross_validation, external_validation
 
 class RandomForest():
     def __init__(self, dataset, estimators=100, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, rf_random_state=1, 
-                max_features_rf='auto', rf_max_depth=None, rf_min_samples_leaf=1, rf_min_samples_split=2, rf_Bootstrap=True):
+                max_features_rf='auto', rf_max_depth=None, rf_min_samples_leaf=1, rf_min_samples_split=2, rf_Bootstrap=True, rf_oob_score=False):
         self.dataset = dataset
         self.n_estimators = estimators
         self.cross_validation_type = cross_validation_type
@@ -23,6 +24,7 @@ class RandomForest():
         self.min_samples_leaf = rf_min_samples_leaf
         self.min_samples_split = rf_min_samples_split
         self.bootstrap = rf_Bootstrap
+        self.oob_score = rf_oob_score
 
         self._xCal = pd.DataFrame()
         self._xVal = pd.DataFrame()
@@ -41,14 +43,17 @@ class RandomForest():
         if (self.dataset_validation is None) and (self.split_for_validation is None):
             raise ValueError('Should be defined the samples for validation or size of test size for split the dataset.')
 
-        x = dataset.iloc[:, 2:]
-        y = dataset.iloc[:, 1]
+        # x = dataset.iloc[:, 2:]
+        # y = dataset.iloc[:, 1]
         
         if (not self.split_for_validation is None) and (self.dataset_validation is None):
-            if isinstance(self.split_for_validation, float):
-                self._xCal, self._xVal, self._yCal, self._yVal = train_test_split(x, y, test_size=split_for_validation, random_state=self._rf_random_state)
+            if self.split_for_validation == 'all':
+                self._xCal = self.dataset.iloc[:, 2:]
+                self._yCal = self.dataset.iloc[:, 1]
+            elif isinstance(self.split_for_validation, float):
+                self._xCal, self._xVal, self._yCal, self._yVal = train_test_split(self.dataset.iloc[:, 2:], self.dataset.iloc[:, 1], test_size=split_for_validation, random_state=lda_random_state)
             else:
-                raise ValueError('split_for_validation need be a float value between 0 and 1')
+                raise ValueError("split_for_validation need be a float value between 0 and 1 for split dataset. Use 1 for calibrate with all samples of dataset.")
 
 
         if not self.dataset_validation is None:
@@ -71,14 +76,13 @@ class RandomForest():
             raise ValueError("The cross_validation_type should be a positive integer for k-fold method ou 'loo' for leave one out cross validation.")
     
 
-    def search_hyperparameters(self, estimators=[100, 1000], max_features=['sqrt'], max_depth=[10, 110], 
-                      min_samples_split=[2], min_samples_leaf=[1], bootstrap=[True], 
-                      n_processors=1, verbose=0):
+    def search_hyperparameters(self, estimators=[100, 1000], max_features=['sqrt'], max_depth=[10, 110], min_samples_split=[2], min_samples_leaf=[1], 
+                               bootstrap=[True], n_processors=1, verbose=0, oob_score=[False]):
         
         stop_value = lambda list_of_values: 10 if (len(list_of_values) < 3) else list_of_values[2]
         
-        n_estimators = [int(x) for x in np.linspace(start = estimators[0], stop = estimators[1], num = stop_value(estimators))]
-        max_depth = [int(x) for x in np.linspace(max_depth[0], max_depth[1], num = stop_value(max_depth))]
+        n_estimators = [int(x) for x in np.arange(start = estimators[0], stop = estimators[1], step = stop_value(estimators))]
+        max_depth = [int(x) for x in np.arange(max_depth[0], max_depth[1], step = stop_value(max_depth))]
         max_depth.append(None)
 
 
@@ -87,7 +91,8 @@ class RandomForest():
                         "max_depth": max_depth,
                         "min_samples_split": min_samples_split,
                         "min_samples_leaf": min_samples_leaf,
-                        "bootstrap": bootstrap                         
+                        "bootstrap": bootstrap,
+                        "oob_score": oob_score                         
                        }
     
         rf = RandomForestRegressor()
@@ -108,12 +113,13 @@ class RandomForest():
         self.min_samples_leaf = get_params(rf_random.best_params_, 'min_samples_leaf', self.min_samples_leaf)
         self.min_samples_split = get_params(rf_random.best_params_, 'min_samples_split', self.min_samples_split)
         self.bootstrap = get_params(rf_random.best_params_, 'bootstrap', self.bootstrap)
+        self.oob_score = get_params(rf_random.best_params_, 'oob_score', self.oob_score)
 
     def calibrate(self):
         
         self._rf = RandomForestRegressor(n_estimators=self.n_estimators, random_state=self._rf_random_state, 
                                          max_features=self.max_features, max_depth=self.max_depth, min_samples_leaf=self.min_samples_leaf, 
-                                         min_samples_split=self.min_samples_split, bootstrap=self.bootstrap)
+                                         min_samples_split=self.min_samples_split, bootstrap=self.bootstrap, oob_score=self.oob_score)
 
         self._rf.fit(self._xCal, self._yCal)
 
@@ -158,7 +164,13 @@ class RandomForest():
         self.cross_validate()
         self.validate()
     
-    def save_results(self, path, out_table=False, plots=False):
+    def save_results(self, path, name="results", out_table=False, plots=False):
+
+        if path[-1] != '/':
+            path += '/'
+        
+        if os.path.exists(f"{path}{name}/")
+
         with open(f"{path}/random_forest_results.txt", 'w') as out:
             out.write('==== Information of model ====\n\n')
             for parameter in self._rf.get_params():
@@ -180,7 +192,7 @@ class RandomForest():
             except:
                 out.write('Cross-validation not performed.\n\n')
             
-            out.write('==== Cross-validation ====\n')
+            out.write('==== Prediction ====\n')
             try:
                 out.write(f"n_samples = {self.metrics['validation']['n_samples']}\n")
                 out.write(f"Coefficiente of correlation (R) = {self.metrics['validation']['R']:.5f}\n")
@@ -192,6 +204,7 @@ class RandomForest():
         
         if plots == True:
             with PdfPages(f"{path}/random_forest_results.pdf") as pdf:
+                plt.rc('font', size=16)
                 fig = plt.figure(figsize=(16, 12), dpi=100)
                 gs = gridspec.GridSpec(2,2)
                 
@@ -200,21 +213,33 @@ class RandomForest():
                 ax1.set_ylabel('Importance')
                 ax1.set_xlabel('Variabble')
                 ax1.set_title('Importance of variables')
- 
+
 
                 ax2 = fig.add_subplot(gs[1, 0])
-                ax2.scatter(self._yCal, self.metrics['cross_validation']['predicted_values'])
-                ax2.set_ylabel('Predicted')
-                ax2.set_xlabel('Reference')
-                ax2.set_title('Cross-validation')
-
+                try:
+                    ax2.scatter(self._yCal, self.metrics['cross_validation']['predicted_values'])
+                    ax2.set_ylabel('Predicted')
+                    ax2.set_xlabel('Reference')
+                    ax2.set_title('Cross-validation')
+                except:
+                    ax2.plot([-1,1], c='black')
+                    ax2.plot([1, -1], c='black')
+                    ax2.axis('off')
+                    ax2.set_title('Cross-validation not performed')
+                
                 ax3 = fig.add_subplot(gs[1, 1])
-                ax3.scatter(self._yVal, self.metrics['validation']['predicted_values'])
-                ax3.set_title('Prediction')
-                ax3.set_ylabel('Predicted')
-                # plt.figure(figsize=(3, 3))
-                ax3.set_xlabel('Reference')
-                plt.tight_layout(pad=1.0)
+                try:
+                    ax3.scatter(self._yVal, self.metrics['validation']['predicted_values'])
+                    ax3.set_ylabel('Predicted')
+                    ax3.set_xlabel('Reference')
+                    ax3.set_title('Prediction')
+                except:
+                    ax3.plot([-1,1], c='black')
+                    ax3.plot([1, -1], c='black')
+                    ax3.axis('off')
+                    ax3.set_title('Prediction not performed')
+                
+                plt.tight_layout(pad=1.5)
                 pdf.savefig()  # saves the current figure into a pdf page
                 plt.close()
 
