@@ -9,15 +9,17 @@ def cross_validation(model, x, y, cv, correlation_based=True):
     if len(y_cv.shape) == 2:
         y_cv = [i[0] for i in y_cv]
 
+    r_correlation = np.corrcoef(y, y_cv)[0][1]
+    
     if correlation_based == True:
-        r2 = np.corrcoef(y, y_cv)[0][1] ** 2
+        r2 = r_correlation ** 2
     else:
         r2 = r2_score(y, y_cv)
     rmse = mean_squared_error(y, y_cv, squared=False)
 
     predicted_values = np.array(y_cv)
 
-    return (r2, rmse, predicted_values)
+    return (r_correlation, r2, rmse, predicted_values)
 
 def classifier_cross_validation(model, x, y, cv):
     y_cv = cross_val_predict(model, x, y, cv=cv)
@@ -42,15 +44,17 @@ def external_validation(model, x, y, correlation_based=True):
     if len(y_val.shape) == 2:
         y_val = [i[0] for i in y_val]
     
+    r_correlation = np.corrcoef(y, y_val)[0][1]
+    
     if correlation_based == True:
-        r2_ve = np.corrcoef(y, y_val)[0][1] ** 2
+        r2_ve = r_correlation ** 2
     else:
         r2_ve = r2_score(y, y_val)
     rmse_ve = mean_squared_error(y, y_val, squared=False)
 
     predicted_values = np.array(y_val)
 
-    return (r2_ve, rmse_ve, predicted_values)
+    return (r_correlation, r2_ve, rmse_ve, predicted_values)
 
 
 def classifier_external_validation(model, x, y):
