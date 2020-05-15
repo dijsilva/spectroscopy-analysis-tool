@@ -30,8 +30,9 @@ df_all_average = make_average(df_all, 2, 2)
 # df_snv_sg2_25 = plus_sg(df, differentiation=2, window_size=25, spectra_start=2, transformation=snv, sg_first=False)
 # df_val_snv_sg2_25 = plus_sg(df_val, differentiation=2, window_size=25, spectra_start=2, transformation=snv, sg_first=False)
 
-# df_msc_sg2_25 = plus_sg(df, differentiation=2, window_size=25, spectra_start=2, transformation=msc, sg_first=False)
-# df_val_msc_sg2_25 = plus_sg(df_val, differentiation=2, window_size=25, spectra_start=2, transformation=msc, sg_first=False)
+df_msc_sg2_25 = plus_sg(df, differentiation=2, window_size=25, spectra_start=2, transformation=msc, sg_first=False)
+df_val_msc_sg2_25 = plus_sg(df_val, differentiation=2, window_size=25, spectra_start=2, transformation=msc, sg_first=False)
+
 
 # df_normalize_sg2_25 = plus_sg(df, differentiation=2, window_size=25, spectra_start=2, transformation=area_norm, sg_first=False)
 # df_val_normalize_sg2_25 = plus_sg(df_val, differentiation=2, window_size=25, spectra_start=2, transformation=area_norm, sg_first=False)
@@ -55,10 +56,10 @@ for transformation in transformations:
 
 
 #rf = RandomForest(df_all, 350, 'loo', dataset_validation=df_val, rf_max_depth=40)
-rf = RandomForest(df, 100, 10, dataset_validation=df_val, rf_max_depth=40, rf_oob_score=True)
-rf.calibrate()
-rf.validate()
-rf.save_results(path="/home/dsilva/teste_pcr/results", plots=True, name=nir)
+rf = RandomForest(df_msc_sg2_25, 200, 10, dataset_validation=df_val_msc_sg2_25)
+#rf.search_hyperparameters(estimators=[10, 1000, 100], max_features=['auto', 'sqrt'], n_processors=-1, verbose=2)
+rf.create_model()
+rf.save_results(path="/home/dsilva/teste_pcr/results", name='raw', plots=True, out_table=True)
 #rf.search_hyperparameters(verbose=2, n_processors=-1, max_depth=[10, 50, 5], estimators=[50, 500, 50], 
 #                          min_samples_leaf=[1, 2, 3], max_features=['sqrt', 'auto'], bootstrap=[True, False], min_samples_split=[2, 3])
 

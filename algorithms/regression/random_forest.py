@@ -76,7 +76,7 @@ class RandomForest():
             raise ValueError("The cross_validation_type should be a positive integer for k-fold method ou 'loo' for leave one out cross validation.")
     
 
-    def search_hyperparameters(self, estimators=[100, 1000], max_features=['sqrt'], max_depth=[10, 110], min_samples_split=[2], min_samples_leaf=[1], 
+    def search_hyperparameters(self, estimators=[100, 1010], max_features=['sqrt'], max_depth=[10, 110], min_samples_split=[2], min_samples_leaf=[1], 
                                bootstrap=[True], n_processors=1, verbose=0, oob_score=[False]):
         
         stop_value = lambda list_of_values: 10 if (len(list_of_values) < 3) else list_of_values[2]
@@ -169,9 +169,10 @@ class RandomForest():
         if path[-1] != '/':
             path += '/'
         
-        if os.path.exists(f"{path}{name}/")
+        if not os.path.exists(f"{path}{name}/"):
+            os.mkdir(f"{path}{name}")
 
-        with open(f"{path}/random_forest_results.txt", 'w') as out:
+        with open(f"{path}{name}/model_information_{name}.txt", 'w') as out:
             out.write('==== Information of model ====\n\n')
             for parameter in self._rf.get_params():
                 out.write(f"{parameter} = {self._rf.get_params()[parameter]}\n")
@@ -203,15 +204,15 @@ class RandomForest():
         
         
         if plots == True:
-            with PdfPages(f"{path}/random_forest_results.pdf") as pdf:
+            with PdfPages(f"{path}{name}/plots_{name}.pdf") as pdf:
                 plt.rc('font', size=16)
                 fig = plt.figure(figsize=(16, 12), dpi=100)
                 gs = gridspec.GridSpec(2,2)
                 
                 ax1 = fig.add_subplot(gs[0,:2])
-                ax1.plot(self._rf.feature_importances_)
+                ax1.plot(self._xCal.columns.astype('int'), self._rf.feature_importances_)
                 ax1.set_ylabel('Importance')
-                ax1.set_xlabel('Variabble')
+                ax1.set_xlabel('Wavelength')
                 ax1.set_title('Importance of variables')
 
 
@@ -242,5 +243,23 @@ class RandomForest():
                 plt.tight_layout(pad=1.5)
                 pdf.savefig()  # saves the current figure into a pdf page
                 plt.close()
+        
+        if out_table == True:
+            try:
+                predictions = pd.DataFrame(np.vstack((self._yVal.values, self.metrics['validation']['predicted_values']))).T
+                predictions.columns = ['Observed', 'Predicted']
+                predictions.index = self._yVal.index
 
+                predictions.to_csv(f"{path}{name}/predictions.csv", sep=';', decimal=',')
+            except:
+                pass
+
+            try:
+                cross_validation_prediction = pd.DataFrame(np.vstack((self._yCal.values, self.metrics['cross_validation']['predicted_values']))).T
+                cross_validation_prediction.columns = ['Observed', 'Predicted']
+                cross_validation_prediction.index = self._yCal.index
+
+                cross_validation_prediction.to_csv(f"{path}{name}/predictions_CV.csv", sep=';', decimal=',')
+            except:
+                pass
                 
