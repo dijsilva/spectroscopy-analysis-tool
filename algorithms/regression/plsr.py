@@ -107,7 +107,7 @@ class PLSR():
     
     def cross_validate(self):
         
-        r2_cv, rmse_cv, predicted_values = cross_validation(self._pls, self._xCal, self._yCal, cv=self._cv)
+        r_correlation, r2_cv, rmse_cv, predicted_values = cross_validation(self._pls, self._xCal, self._yCal, cv=self._cv)
 
         method = 'LOO'
         if isinstance(self._cv, int):
@@ -120,7 +120,7 @@ class PLSR():
 
     def validate(self):
 
-        r2_ve, rmse_ve, predicted_values = external_validation(self._pls, self._xVal, self._yVal)
+        r_correlation, r2_ve, rmse_ve, predicted_values = external_validation(self._pls, self._xVal, self._yVal)
 
         nsamples = self._xVal.shape[0]
         validation = {'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values}
