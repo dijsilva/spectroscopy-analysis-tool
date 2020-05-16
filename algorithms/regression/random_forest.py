@@ -180,14 +180,14 @@ class RandomForest():
             
             out.write('==== Calibration ====\n')
             out.write(f"n_samples = {self.metrics['calibration']['n_samples']}\n")
-            out.write(f"Coefficiente of correlation (R) = {self.metrics['calibration']['R']:.5f}\n")
+            out.write(f"Coefficient  of correlation (R) = {self.metrics['calibration']['R']:.5f}\n")
             out.write(f"Coefficient of determination (R2) = {self.metrics['calibration']['R2']:.5f}\n")
             out.write(f"Root mean squared error (RMSE) = {self.metrics['calibration']['RMSE']:.5f}\n\n")
 
             out.write('==== Cross-validation ====\n')
             try:
                 out.write(f"Cross-validation type: {self.metrics['cross_validation']['method']}\n")
-                out.write(f"Coefficiente of correlation (R) = {self.metrics['cross_validation']['R']:.5f}\n")
+                out.write(f"Coefficient of correlation (R) = {self.metrics['cross_validation']['R']:.5f}\n")
                 out.write(f"Coefficient of determination (R2) = {self.metrics['cross_validation']['R2']:.5f}\n")
                 out.write(f"Root mean squared error (RMSE) = {self.metrics['cross_validation']['RMSE']:.5f}\n\n")
             except:
@@ -196,7 +196,7 @@ class RandomForest():
             out.write('==== Prediction ====\n')
             try:
                 out.write(f"n_samples = {self.metrics['validation']['n_samples']}\n")
-                out.write(f"Coefficiente of correlation (R) = {self.metrics['validation']['R']:.5f}\n")
+                out.write(f"Coefficient of correlation (R) = {self.metrics['validation']['R']:.5f}\n")
                 out.write(f"Coefficient of determination (R2) = {self.metrics['validation']['R2']:.5f}\n")
                 out.write(f"Root mean squared error (RMSE) = {self.metrics['validation']['RMSE']:.5f}\n\n")
             except:
