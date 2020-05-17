@@ -3,10 +3,6 @@ from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_s
 from sklearn.metrics import mean_squared_error, r2_score
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib import gridspec
-import os
 
 from utils import cross_validation, external_validation
 
@@ -18,7 +14,7 @@ class RandomForest():
         self.cross_validation_type = cross_validation_type
         self.split_for_validation = split_for_validation
         self.dataset_validation = dataset_validation
-        self._rf_random_state = rf_random_state
+        self.rf_random_state = rf_random_state
         self.max_features = max_features_rf
         self.max_depth = rf_max_depth
         self.min_samples_leaf = rf_min_samples_leaf
@@ -70,7 +66,7 @@ class RandomForest():
             if cross_validation_type == "loo":
                 self._cv = LeaveOneOut()
         elif (type(cross_validation_type) in [int]) and (cross_validation_type > 0):
-            cv = KFold(cross_validation_type, shuffle=True, random_state=self._rf_random_state)
+            cv = KFold(cross_validation_type, shuffle=True, random_state=self.model_random_state)
             self._cv = cv
         else:
             raise ValueError("The cross_validation_type should be a positive integer for k-fold method ou 'loo' for leave one out cross validation.")
@@ -117,16 +113,16 @@ class RandomForest():
 
     def calibrate(self):
         
-        self._rf = RandomForestRegressor(n_estimators=self.n_estimators, random_state=self._rf_random_state, 
+        self.model = RandomForestRegressor(n_estimators=self.n_estimators, random_state=self.rf_random_state, 
                                          max_features=self.max_features, max_depth=self.max_depth, min_samples_leaf=self.min_samples_leaf, 
                                          min_samples_split=self.min_samples_split, bootstrap=self.bootstrap, oob_score=self.oob_score)
 
-        self._rf.fit(self._xCal, self._yCal)
+        self.model.fit(self._xCal, self._yCal)
 
-        y_cal_predict = self._rf.predict(self._xCal)
+        y_cal_predict = self.model.predict(self._xCal)
 
         r_correlation = np.corrcoef(self._yCal, y_cal_predict)[0][1]
-        r2_cal = self._rf.score(self._xCal, self._yCal)
+        r2_cal = self.model.score(self._xCal, self._yCal)
         rmse = mean_squared_error(self._yCal, y_cal_predict, squared=False)
 
         nsamples = self._xCal.shape[0]
@@ -139,7 +135,7 @@ class RandomForest():
 
     def cross_validate(self):
         
-        r_correlation, r2_cv, rmse_cv, predicted_values = cross_validation(self._rf, self._xCal, self._yCal, self._cv, correlation_based=False)
+        r_correlation, r2_cv, rmse_cv, predicted_values = cross_validation(self.model, self._xCal, self._yCal, self._cv, correlation_based=False)
 
         method = 'Leave One Out'
         if isinstance(self._cv, KFold):
@@ -151,7 +147,7 @@ class RandomForest():
     
     def validate(self):
 
-        r_correlation, r2_ve, rmse_ve, predicted_values = external_validation(self._rf, self._xVal, self._yVal, correlation_based=False)
+        r_correlation, r2_ve, rmse_ve, predicted_values = external_validation(self.model, self._xVal, self._yVal, correlation_based=False)
 
         nsamples = self._xVal.shape[0]
         validation = {'R': r_correlation, 'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values}

@@ -40,21 +40,24 @@ def msc(dataset, spectra_start=2):
     if type(spectra_start) not in [int]:
         raise ValueError('spectra_start should be a integer that reference a column')
 
-    spectra = dataset.iloc[:, spectra_start:]
+    df = dataset.copy()
+
+    spectra = df.iloc[:, spectra_start:]
 
     ref = np.mean(spectra, axis=0)
 
     for i in range(spectra.shape[0]):
         spectra.iloc[i, :] -= spectra.iloc[i, :].mean()
     
-    data_msc = np.zeros_like(dataset)
+    data_msc = np.zeros_like(df)
 
     msc = pd.DataFrame(data_msc)
 
-    msc.iloc[:,:2] = dataset.iloc[:,:2].values
+    msc.iloc[:,:2] = df.iloc[:,:2].values
+    msc.iloc[:,1] = msc.iloc[:,1].astype(df.iloc[:,1].dtype)
 
-    msc.index = dataset.index
-    msc.columns = dataset.columns
+    msc.index = df.index
+    msc.columns = df.columns
 
     for i in range(spectra.shape[0]):
         
@@ -97,7 +100,6 @@ def sg(dataset, differentiation, window_size, polynominal_order=4, spectra_start
         - window_size is a window size (must be odd).
         - polynominal_order for equation
     """
-
     if not isinstance(dataset, pd.DataFrame):
         raise ValueError('dataset should be a pandas dataframe')
     if type(differentiation) not in [int]:
