@@ -1,4 +1,4 @@
-from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_split
+from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_split, GridSearchCV
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.metrics import mean_squared_error
 from utils import external_validation, cross_validation
@@ -23,7 +23,7 @@ class PLSR():
         If split_for_validation and dataset_validation are both informed, then only dataset_validation is considered.
     """
 
-    def __init__(self, dataset, components=2, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, scale=False, plsr_random_state=123):
+    def __init__(self, dataset, components=2, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, scale=True, plsr_random_state=123):
         self.dataset = dataset
         self.components = components
         self.cross_validation_type = cross_validation_type
@@ -79,6 +79,23 @@ class PLSR():
 
         if self.scaleOpt not in [True, False]:
             raise ValueError('The scale option should be a boolean.')
+    
+    def search_hyperparameters(self, components=[1, 21], n_processors=1, verbose=0, scoring='neg_root_mean_squared_error'):
+        
+        step_value = lambda list_of_values: 1 if (len(list_of_values) < 3) else list_of_values[2]
+        components = [int(x) for x in np.arange(start = components[0], stop = components[1], step = step_value(components))]
+        
+        grid = { "n_components": components }
+
+        pls = PLSRegression(scale=self.scaleOpt)
+        pls_grid_search = GridSearchCV(estimator = pls, param_grid = grid, cv = self._cv, n_jobs = n_processors, verbose=verbose, scoring=scoring)
+
+        pls_grid_search.fit(self._xCal, self._yCal)
+
+        get_params = lambda dict_params, param, default_params: dict_params[param] if (param in dict_params) else default_params
+        
+        self._best_params = pls_grid_search.best_params_
+        self.components = get_params(pls_grid_search.best_params_, 'n_components', self.components)
     
     
     def calibrate(self):

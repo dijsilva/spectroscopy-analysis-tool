@@ -73,7 +73,7 @@ class RandomForest():
     
 
     def search_hyperparameters(self, estimators=[100, 1010], max_features=['sqrt'], max_depth=[10, 110], min_samples_split=[2], min_samples_leaf=[1], 
-                               bootstrap=[True], n_processors=1, verbose=0, oob_score=[False]):
+                               bootstrap=[True], n_processors=1, verbose=0, oob_score=[False], scoring='neg_root_mean_squared_error'):
         
         stop_value = lambda list_of_values: 10 if (len(list_of_values) < 3) else list_of_values[2]
         
@@ -93,7 +93,7 @@ class RandomForest():
     
         rf = RandomForestRegressor()
 
-        rf_random = GridSearchCV(estimator = rf, param_grid = random_grid, cv = self._cv, n_jobs = n_processors, verbose=verbose)
+        rf_random = GridSearchCV(estimator = rf, param_grid = random_grid, cv = self._cv, n_jobs = n_processors, verbose=verbose, scoring=scoring)
         
         if verbose == 0:
             print('Running...')
