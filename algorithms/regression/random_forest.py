@@ -1,5 +1,5 @@
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_split, KFold, GridSearchCV
+from sklearn.model_selection import LeaveOneOut, train_test_split, KFold, GridSearchCV
 from sklearn.metrics import mean_squared_error, r2_score
 import pandas as pd
 import numpy as np
@@ -47,7 +47,7 @@ class RandomForest():
                 self._xCal = self.dataset.iloc[:, 2:]
                 self._yCal = self.dataset.iloc[:, 1]
             elif isinstance(self.split_for_validation, float):
-                self._xCal, self._xVal, self._yCal, self._yVal = train_test_split(self.dataset.iloc[:, 2:], self.dataset.iloc[:, 1], test_size=split_for_validation, random_state=lda_random_state)
+                self._xCal, self._xVal, self._yCal, self._yVal = train_test_split(self.dataset.iloc[:, 2:], self.dataset.iloc[:, 1], test_size=split_for_validation, random_state=self.rf_random_state)
             else:
                 raise ValueError("split_for_validation need be a float value between 0 and 1 for split dataset. Use 1 for calibrate with all samples of dataset.")
 
@@ -66,21 +66,20 @@ class RandomForest():
             if cross_validation_type == "loo":
                 self._cv = LeaveOneOut()
         elif (type(cross_validation_type) in [int]) and (cross_validation_type > 0):
-            cv = KFold(cross_validation_type, shuffle=True, random_state=self.model_random_state)
+            cv = KFold(cross_validation_type, shuffle=True, random_state=self.rf_random_state)
             self._cv = cv
         else:
             raise ValueError("The cross_validation_type should be a positive integer for k-fold method ou 'loo' for leave one out cross validation.")
     
 
-    def search_hyperparameters(self, estimators=[100, 1010], max_features=['sqrt'], max_depth=[10, 110], min_samples_split=[2], min_samples_leaf=[1], 
+    def search_hyperparameters(self, estimators=[100, 1010], max_features=['sqrt'], max_depth=[None], min_samples_split=[2], min_samples_leaf=[1], 
                                bootstrap=[True], n_processors=1, verbose=0, oob_score=[False], scoring='neg_root_mean_squared_error'):
         
         stop_value = lambda list_of_values: 10 if (len(list_of_values) < 3) else list_of_values[2]
-        
         n_estimators = [int(x) for x in np.arange(start = estimators[0], stop = estimators[1], step = stop_value(estimators))]
-        max_depth = [int(x) for x in np.arange(max_depth[0], max_depth[1], step = stop_value(max_depth))]
-        max_depth.append(None)
-
+        if None not in max_depth:
+            max_depth = [int(x) for x in np.arange(max_depth[0], max_depth[1], step = stop_value(max_depth))]
+            max_depth.append(None)
 
         random_grid = { "n_estimators": n_estimators,
                         "max_features": max_features,
