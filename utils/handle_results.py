@@ -6,7 +6,7 @@ from matplotlib import gridspec
 from matplotlib.backends.backend_pdf import PdfPages
 
 
-def save_results_of_model(model_instance, path, name="results", out_table=False, plots=False, variables_importance='plsr'):
+def save_results_of_model(model_instance, path, name="results", out_table=False, plots=False, coefficients_of_model='plsr'):
     if path[-1] != '/':
             path += '/'
         
@@ -51,15 +51,29 @@ def save_results_of_model(model_instance, path, name="results", out_table=False,
             gs = gridspec.GridSpec(2,2)
             
             ax1 = fig.add_subplot(gs[0,:2])
-            if variables_importance == 'random_forest':
+            if coefficients_of_model == 'random_forest':
                 ax1.plot(model_instance._xCal.columns.astype('int'), model_instance.model.feature_importances_)
                 ax1.set_ylabel('Importance')
                 ax1.set_xlabel('Wavelength')
                 ax1.set_title('Importance of variables')
-            elif variables_importance == 'plsr':
+            elif coefficients_of_model == 'plsr':
                 ax1.plot(model_instance._xCal.columns.astype('int'), model_instance.model.coef_)
                 x_for_line = [0] * model_instance.model.coef_.shape[0]
                 ax1.plot(model_instance._xCal.columns.astype('int'), x_for_line, c='black')
+                ax1.set_ylabel('Value of coefficient')
+                ax1.set_xlabel('Wavelength')
+                ax1.set_title('Coefficients')
+            elif coefficients_of_model == 'svr' and model_instance.model.kernel == 'linear':
+                ax1.plot(model_instance._xCal.columns.astype('int'), model_instance.model.coef_[0])
+                x_for_line = [0] * model_instance.model.coef_[0].shape[0]
+                ax1.plot(model_instance._xCal.columns.astype('int'), x_for_line, c='black')
+                ax1.set_ylabel('Value of coefficient')
+                ax1.set_xlabel('Wavelength')
+                ax1.set_title('Coefficients')
+            elif coefficients_of_model == 'svr' and model_instance.model.kernel != 'linear':
+                ax1.plot([1, -1], c='black')
+                ax1.plot([-1, 1], c='black')
+                ax1.axis('off')
                 ax1.set_ylabel('Value of coefficient')
                 ax1.set_xlabel('Wavelength')
                 ax1.set_title('Coefficients')

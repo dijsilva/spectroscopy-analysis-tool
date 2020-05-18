@@ -1,4 +1,4 @@
-from sklearn.svm import SVC
+from sklearn.svm import SVR
 from sklearn.model_selection import LeaveOneOut, train_test_split, KFold, GridSearchCV
 from sklearn.metrics import mean_squared_error, r2_score
 import pandas as pd
@@ -7,7 +7,7 @@ import numpy as np
 from utils import cross_validation, external_validation
 
 class SVMRegression():
-    def __init__(self, dataset, type_of_kernel='rbf', cross_validation_type='loo', split_for_validation=None, dataset_validation=None, svm_random_state=1, 
+    def __init__(self, dataset, type_of_kernel = 'rbf', cross_validation_type = 'loo', split_for_validation = None, dataset_validation = None, svm_random_state = 1, 
                 svm_degree=3, svm_gamma='scale', svm_coef=0.0, svm_tol=1e-10, svm_epsilon=0.1, svm_max_iter=-1):
         self.dataset = dataset
         self.kernel = type_of_kernel
@@ -73,25 +73,23 @@ class SVMRegression():
             raise ValueError("The cross_validation_type should be a positive integer for k-fold method ou 'loo' for leave one out cross validation.")
     
 
-    def search_hyperparameters(self, kernel = ['rbf'], degree = [ 3 ], gamma=[ 'scale' ], coef0=[ 0.0, 0.1 ], epsilon=[ 0.1, 2.0 ], 
+    def search_hyperparameters(self, kernel = ['rbf'], degree = [ 3 ], gamma=[ 'scale' ], coef0=[ 0.0, 0.1 ], epsilon=[ 0.1, 2.0 ], tol = [1e-3, 1e-10], 
                                max_iter = [ -1 ], n_processors = 1, verbose = 0, scoring = 'neg_root_mean_squared_error'):
         
         step_value = lambda list_of_values: 0.5 if (len(list_of_values) < 3) else list_of_values[2]
-        epsilon = [x for x in np.arange(start = epsilon[0], stop = epsilon[1], step = step_value(epsilon))]
-        coef0 = [x for x in np.arange(start = coef0[0], stop = coef0[1], step = step_value(coef0))]
-        # if None not in max_depth:
-        #     max_depth = [int(x) for x in np.arange(max_depth[0], max_depth[1], step = stop_value(max_depth))]
-        #     max_depth.append(None)
+        epsilon = [round(x, 3) for x in np.arange(start = epsilon[0], stop = epsilon[1], step = step_value(epsilon))]
+        coef0 = [round(x, 3) for x in np.arange(start = coef0[0], stop = coef0[1], step = step_value(coef0))]
 
         random_grid = { "kernel": kernel,
                         "degree": degree,
                         "gamma": gamma,
                         "coef0": coef0,
                         "epsilon": epsilon,
-                        "max_iter": max_iter
+                        "max_iter": max_iter,
+                        "tol": tol
                        }
     
-        svm_regression = RandomForestRegressor()
+        svm_regression = SVR()
 
         svm_regresion_grid = GridSearchCV(estimator = svm_regression, param_grid = random_grid, cv = self._cv, n_jobs = n_processors, verbose=verbose, scoring=scoring)
         svm_regresion_grid.fit(self._xCal, self._yCal)
@@ -99,19 +97,18 @@ class SVMRegression():
         get_params = lambda dict_params, param, default_params: dict_params[param] if (param in dict_params) else default_params
         
         self._best_params = svm_regresion_grid.best_params_
-        self.kernel = get_params(svm_regresion_grid.best_params_, 'n_estimators', self.kernel)
-        self.degree = get_params(svm_regresion_grid.best_params_, 'max_features', self.degree)
-        self.gamma = get_params(svm_regresion_grid.best_params_, 'max_depth', self.gamma)
-        self.coef0 = get_params(svm_regresion_grid.best_params_, 'min_samples_leaf', self.coef0)
-        self.tol = get_params(svm_regresion_grid.best_params_, 'min_samples_split', self.tol)
-        self.epsilon = get_params(svm_regresion_grid.best_params_, 'bootstrap', self.epsilon)
-        self.max_iter = get_params(svm_regresion_grid.best_params_, 'oob_score', self.max_iter)
+        self.kernel = get_params(svm_regresion_grid.best_params_, 'kernel', self.kernel)
+        self.degree = get_params(svm_regresion_grid.best_params_, 'degree', self.degree)
+        self.gamma = get_params(svm_regresion_grid.best_params_, 'gamma', self.gamma)
+        self.coef0 = get_params(svm_regresion_grid.best_params_, 'coef0', self.coef0)
+        self.tol = get_params(svm_regresion_grid.best_params_, 'tol', self.tol)
+        self.epsilon = get_params(svm_regresion_grid.best_params_, 'epsilon', self.epsilon)
+        self.max_iter = get_params(svm_regresion_grid.best_params_, 'max_iter', self.max_iter)
 
     def calibrate(self):
         
-        self.model = RandomForestRegressor(n_estimators=self.kernel, random_state=self.svm_random_state, 
-                                         max_features=self.degree, max_depth=self.gamma, min_samples_leaf=self.coef0, 
-                                         min_samples_split=self.tol, bootstrap=self.epsilon, oob_score=self.max_iter)
+        self.model = SVR(kernel = self.kernel, degree = self.degree, gamma = self.gamma, coef0 = self.coef0, tol = self.tol, 
+                         epsilon = self.epsilon, max_iter = self.max_iter)
 
         self.model.fit(self._xCal, self._yCal)
 
