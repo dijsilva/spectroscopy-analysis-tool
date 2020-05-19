@@ -49,7 +49,7 @@ class RandomForest():
             elif isinstance(self.split_for_validation, float):
                 self._xCal, self._xVal, self._yCal, self._yVal = train_test_split(self.dataset.iloc[:, 2:], self.dataset.iloc[:, 1], test_size=split_for_validation, random_state=self.rf_random_state)
             else:
-                raise ValueError("split_for_validation need be a float value between 0 and 1 for split dataset. Use 1 for calibrate with all samples of dataset.")
+                raise ValueError("split_for_validation need be a float value between 0 and 1 for split dataset. Use 'all' for calibrate with all samples of dataset.")
 
 
         if not self.dataset_validation is None:

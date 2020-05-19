@@ -19,12 +19,17 @@ def make_transformations(datasets, transformations, index_spectra_start=2):
            'SG2_25_MSC', 'AREA_NORM_SG2_11', 'AREA_NORM_SG2_25', 'MSC_SG2_11', 
            'MSC_SG2_25']
     
-
+    transformations = [x.upper() for x in transformations]
     dataset_transformed = []
 
-    if 'all' in transformations:
+    if 'ALL' in transformations:
         transformations = ALL
-   
+    
+
+    if len(datasets) == 2:
+        dataset_transformed.append((datasets[0], datasets[1], 'RAW'))
+    if len(datasets) == 1:
+        dataset_transformed.append((datasets[0], 'RAW'))
    
     if 'SNV' in transformations:
         if len(datasets) == 2:

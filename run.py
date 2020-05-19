@@ -17,7 +17,7 @@ import numpy as np
 
 #VARIABLES
 FOLDER_BASE = '/home/dsilva/testes_ml/models'
-ANALYSIS = 'SVM_Regression_eb'
+ANALYSIS = 'PLSR_Bruno_cv'
 save_results = True
 
 if FOLDER_BASE[-1] != '/':
@@ -29,38 +29,39 @@ if not os.path.exists(f"{FOLDER_BASE}{ANALYSIS}"):
 else:
     FOLDER = f"{FOLDER_BASE}{ANALYSIS}"
 
-df = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep-eb_calibration.csv', sep=';', decimal=',')
-df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/eb_for_prediction.csv', sep=';', decimal=',')
+#df = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep-eb_calibration.csv', sep=';', decimal=',')
+#df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep_for_prediction.csv', sep=';', decimal=',')
+df = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/cv_350.csv', sep=';', decimal=',')
+
 
 
 # df = make_average(df, 2, 2)
 # df_val = make_average(df_val, 2, 2)
 
-transformeds = make_transformations([df_val], ['all'], 2)
-
+print('Fazendo transformações... ')
+transformations = make_transformations([df], ['all'], 2)
+print('Ok')
 # TRANSFORMAÇÕES
-
-
-
-"""
 
 results = np.zeros((len(transformations), 7))
 results[:] = np.nan
 
 df_results = pd.DataFrame(results)
 
+print('Começando a criar os modelos...')
 for pos, transformation in enumerate(transformations):
-    rf = SVMRegression(transformation[0], cross_validation_type='loo', dataset_validation=transformation[1])
+    rf = PLSR(transformation[0], components=5, cross_validation_type='loo', split_for_validation='all')
     #rf.search_hyperparameters(n_processors=-1, verbose=1, estimators=[100, 510, 100], min_samples_split=[2, 10, 100, 400], min_samples_leaf=[1,2, 3])
-    rf.search_hyperparameters(n_processors=-1, verbose=1, kernel=['rbf', 'linear'], gamma=[50, 100, 200])
-    rf.create_model()
+    rf.search_hyperparameters(n_processors=-1, verbose=1, components=[1, 21, 1])
+    rf.calibrate()
+    rf.cross_validate()
 
     if save_results == True:
-        save_results_of_model(rf, path=FOLDER, name=transformation[2], plots=True, out_table=True, coefficients_of_model='svr')
+        save_results_of_model(rf, path=FOLDER, name=transformation[1], plots=True, out_table=True, coefficients_of_model='plsr')
 
 
     try:
-        df_results.iloc[pos, 0] = transformation[2]
+        df_results.iloc[pos, 0] = transformation[1]
         df_results.iloc[pos, 1] = rf.metrics['calibration']['R2']
         df_results.iloc[pos, 2] = rf.metrics['calibration']['RMSE']
     except:
@@ -80,9 +81,8 @@ for pos, transformation in enumerate(transformations):
     except:
         pass
 
-    print(transformation[2])
+    print(transformation[1])
 
 
 df_results.columns = ['TRANSFORMATION', 'R2_CAL', 'RMSE_CAL', 'R2_CV', 'RMSE_CV', 'R2_PRED', 'RMSE_PRED']
-df_results.to_csv(f"{FOLDER}/results.csv", sep=';', decimal=',', index=False)
-"""
+df_results.to_csv(f"{FOLDER}/results_{ANALYSIS}.csv", sep=';', decimal=',', index=False)

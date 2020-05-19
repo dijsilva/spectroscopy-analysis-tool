@@ -46,11 +46,13 @@ def save_results_of_model(model_instance, path, name="results", out_table=False,
     
     if plots == True:
         with PdfPages(f"{path}{name}/plots_{name}.pdf") as pdf:
+            
+            fig1 = plt.figure(figsize=(16, 12), dpi=100)
             plt.rc('font', size=16)
-            fig = plt.figure(figsize=(16, 12), dpi=100)
+            plt.tight_layout(pad=0.5)
             gs = gridspec.GridSpec(2,2)
             
-            ax1 = fig.add_subplot(gs[0,:2])
+            ax1 = fig1.add_subplot(gs[0,:2])
             if coefficients_of_model == 'random_forest':
                 ax1.plot(model_instance._xCal.columns.astype('int'), model_instance.model.feature_importances_)
                 ax1.set_ylabel('Importance')
@@ -78,7 +80,7 @@ def save_results_of_model(model_instance, path, name="results", out_table=False,
                 ax1.set_xlabel('Wavelength')
                 ax1.set_title('Coefficients')
 
-            ax2 = fig.add_subplot(gs[1, 0])
+            ax2 = fig1.add_subplot(gs[1, 0])
             try:
                 ax2.scatter(model_instance._yCal, model_instance.metrics['cross_validation']['predicted_values'])
                 ax2.set_ylabel('Predicted')
@@ -90,7 +92,7 @@ def save_results_of_model(model_instance, path, name="results", out_table=False,
                 ax2.axis('off')
                 ax2.set_title('Cross-validation not performed')
             
-            ax3 = fig.add_subplot(gs[1, 1])
+            ax3 = fig1.add_subplot(gs[1, 1])
             try:
                 ax3.scatter(model_instance._yVal, model_instance.metrics['validation']['predicted_values'])
                 ax3.set_ylabel('Predicted')
@@ -102,8 +104,40 @@ def save_results_of_model(model_instance, path, name="results", out_table=False,
                 ax3.axis('off')
                 ax3.set_title('Prediction not performed')
             
-            plt.tight_layout(pad=1.5)
-            pdf.savefig()  # saves the current figure into a pdf page
+            plt.tight_layout(pad=2.0)  # saves the current figure into a pdf page
+            pdf.savefig(fig1)  # saves the current figure into a pdf page
+            plt.close()
+
+            fig2 = plt.figure(figsize=(16, 12), dpi=100)
+            plt.rc('font', size=16)
+            gs = gridspec.GridSpec(2,2)
+            ax4 = fig2.add_subplot(gs[0, :])
+            try:
+                ax4.plot(model_instance._xCal.columns.astype('int'), model_instance._xCal.T.values)
+                ax4.set_ylabel('Absorbance')
+                ax4.set_xlabel('Wavelength')
+                ax4.set_title('Plotline - Calibration')
+            except:
+                ax4.plot([-1,1], c='black')
+                ax4.plot([1, -1], c='black')
+                ax4.axis('off')
+                ax4.set_title('Plotline not performed')
+            
+            ax5 = fig2.add_subplot(gs[1, :])
+            try:
+                ax5.plot(model_instance._xVal.columns.astype('int'), model_instance._xVal.T.values)
+                ax5.set_ylabel('Absorbance')
+                ax5.set_xlabel('Wavelength')
+                ax5.set_title('Plotline - Validation')
+            except:
+                ax5.plot([-1,1], c='black')
+                ax5.plot([1, -1], c='black')
+                ax5.axis('off')
+                ax5.set_title('Plotline not performed')
+            
+            plt.tight_layout(pad=2.0)  # saves the current figure into a pdf page
+            pdf.savefig(fig2)
+            # pdf.close()
             plt.close()
     
     if out_table == True:
