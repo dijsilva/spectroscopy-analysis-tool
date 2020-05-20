@@ -32,6 +32,7 @@ else:
 #df = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep-eb_calibration.csv', sep=';', decimal=',')
 #df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep_for_prediction.csv', sep=';', decimal=',')
 df = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/bruno_250_divisao_bruno_sgr.csv', sep=';', decimal=',')
+#df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/bruno_100_divisao_bruno_sgr.csv', sep=';', decimal=',')
 
 
 
@@ -39,7 +40,7 @@ df = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/bruno_250_divisao_bruno_s
 # df_val = make_average(df_val, 2, 2)
 
 print('Fazendo transformações... ')
-transformations = make_transformations([df], ['all'], 2)
+transformations = make_transformations([df], ['msc'], 2)
 print('Ok')
 # TRANSFORMAÇÕES
 

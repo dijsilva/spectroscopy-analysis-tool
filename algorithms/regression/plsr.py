@@ -23,7 +23,7 @@ class PLSR():
         If split_for_validation and dataset_validation are both informed, then only dataset_validation is considered.
     """
 
-    def __init__(self, dataset, components=2, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, scale=True, plsr_random_state=123):
+    def __init__(self, dataset, components=2, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, scale=False, plsr_random_state=123):
         self.dataset = dataset
         self.components = components
         self.cross_validation_type = cross_validation_type

@@ -16,13 +16,12 @@ def snv(dataset, spectra_start=2):
         raise ValueError('spectra_start should be a integer that reference a column')
 
     df = dataset.copy()
-    rows = df.shape[0]
 
-    for row in range(rows):
-        mean = df.iloc[row, spectra_start:].mean(axis=0)
-        std = df.iloc[row, spectra_start:].std(axis=0)
+    avg = df.iloc[: ,spectra_start:].mean(axis=1)
+    stds = df.iloc[: ,spectra_start:].std(axis=1)
 
-        df.iloc[row, spectra_start:] = (df.iloc[row, spectra_start:] - mean) / std
+    df.iloc[:, spectra_start:] = df.iloc[:, spectra_start:].subtract(avg, axis=0)
+    df.iloc[:, spectra_start:] = df.iloc[:, spectra_start:].divide(stds, axis=0)
     
     return df
 
@@ -44,28 +43,18 @@ def msc(dataset, spectra_start=2):
 
     spectra = df.iloc[:, spectra_start:]
 
-    ref = np.mean(spectra, axis=0)
+    ref = np.mean(df.iloc[:, spectra_start:], axis=0)
+    mean = df.iloc[:, spectra_start:].mean(axis=1)
 
-    for i in range(spectra.shape[0]):
-        spectra.iloc[i, :] -= spectra.iloc[i, :].mean()
-    
-    data_msc = np.zeros_like(df)
-
-    msc = pd.DataFrame(data_msc)
-
-    msc.iloc[:,:2] = df.iloc[:,:2].values
-    msc.iloc[:,1] = msc.iloc[:,1].astype(df.iloc[:,1].dtype)
-
-    msc.index = df.index
-    msc.columns = df.columns
+    df.iloc[:, spectra_start:] = df.iloc[:, spectra_start:].subtract(mean, axis=0)
 
     for i in range(spectra.shape[0]):
         
-        fit = np.polyfit(ref, spectra.iloc[i, :].astype('float64'), deg=1, full=True)
+        fit = np.polyfit(ref, df.iloc[i, spectra_start :].astype('float64'), deg=1, full=True)
         
-        msc.iloc[i, 2:] = ((spectra.iloc[i, :] - fit[0][1]) / fit[0][0]).values
+        df.iloc[i, spectra_start:] = ((df.iloc[i, spectra_start :] - fit[0][1]) / fit[0][0]).values
 
-    return msc
+    return df
 
 
 def area_norm(dataset, spectra_start=2):
@@ -82,10 +71,10 @@ def area_norm(dataset, spectra_start=2):
         raise ValueError('spectra_start should be a integer that reference a column')
 
     df = dataset.copy()
-    rows = df.shape[0]
-    for row in range(rows):
-        sum_of_row = df.iloc[row, spectra_start:].sum(axis=0)
-        df.iloc[row, spectra_start:] = df.iloc[row, spectra_start:] / sum_of_row
+
+    sum_of_rows = df.iloc[:, spectra_start:].sum(axis=1)
+
+    df.iloc[:, spectra_start:] = df.iloc[:, spectra_start:].divide(sum_of_rows, axis=0)
     
     return df
 
