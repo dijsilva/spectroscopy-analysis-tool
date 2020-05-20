@@ -17,7 +17,7 @@ import numpy as np
 
 #VARIABLES
 FOLDER_BASE = '/home/dsilva/testes_ml/models'
-ANALYSIS = 'PLSR_Bruno_cv'
+ANALYSIS = 'PLSR_Bruno_cv_250'
 save_results = True
 
 if FOLDER_BASE[-1] != '/':
@@ -31,7 +31,7 @@ else:
 
 #df = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep-eb_calibration.csv', sep=';', decimal=',')
 #df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep_for_prediction.csv', sep=';', decimal=',')
-df = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/cv_350.csv', sep=';', decimal=',')
+df = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/bruno_250_divisao_bruno_sgr.csv', sep=';', decimal=',')
 
 
 
@@ -48,6 +48,7 @@ results[:] = np.nan
 
 df_results = pd.DataFrame(results)
 
+"""
 print('Começando a criar os modelos...')
 for pos, transformation in enumerate(transformations):
     rf = PLSR(transformation[0], components=5, cross_validation_type='loo', split_for_validation='all')
@@ -85,4 +86,4 @@ for pos, transformation in enumerate(transformations):
 
 
 df_results.columns = ['TRANSFORMATION', 'R2_CAL', 'RMSE_CAL', 'R2_CV', 'RMSE_CV', 'R2_PRED', 'RMSE_PRED']
-df_results.to_csv(f"{FOLDER}/results_{ANALYSIS}.csv", sep=';', decimal=',', index=False)
+df_results.to_csv(f"{FOLDER}/results_{ANALYSIS}.csv", sep=';', decimal=',', index=False)"""

@@ -90,11 +90,11 @@ def make_transformations(datasets, transformations, index_spectra_start=2):
 
     if 'SG2_11' in transformations:
         if len(datasets) == 2:
-            df_sg2_11 = sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start)
-            df_val_sg2_11 = sg(datasets[1], differentiation=2, window_size=11, spectra_start=index_spectra_start)
+            df_sg2_11 = sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start)
+            df_val_sg2_11 = sg(datasets[1], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start)
             dataset_transformed.append((df_sg2_11, df_val_sg2_11, 'SG2_11'))
         if len(datasets) == 1:
-            df_sg2_11 = sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start)
+            df_sg2_11 = sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start)
             dataset_transformed.append((df_sg2_11, 'SG2_11'))
     
 
@@ -123,11 +123,11 @@ def make_transformations(datasets, transformations, index_spectra_start=2):
 
     if 'SNV_SG2_11' in transformations:
         if len(datasets) == 2:
-            df_snv_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=snv, sg_first=False)
+            df_snv_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=snv, sg_first=False)
             df_val_snv_sg2_11 = plus_sg(datasets[1], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=snv, sg_first=False)
             dataset_transformed.append((df_snv_sg2_11, df_val_snv_sg2_11, 'SNV_SG2_11'))
         if len(datasets) == 1:
-            df_snv_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=snv, sg_first=False)
+            df_snv_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=snv, sg_first=False)
             dataset_transformed.append((df_snv_sg2_11, 'SNV_SG2_11'))
     
 
@@ -167,11 +167,11 @@ def make_transformations(datasets, transformations, index_spectra_start=2):
 
     if 'SG2_11_SNV' in transformations:
         if len(datasets) == 2:        
-            df_sg2_11_snv = plus_sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=snv, sg_first=True)
-            df_val_sg2_11_snv = plus_sg(datasets[1], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=snv, sg_first=True)
+            df_sg2_11_snv = plus_sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=snv, sg_first=True)
+            df_val_sg2_11_snv = plus_sg(datasets[1], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=snv, sg_first=True)
             dataset_transformed.append((df_sg2_11_snv, df_val_sg2_11_snv, 'SG2_11_SNV'))
         if len(datasets) == 1:
-            df_sg2_11_snv = plus_sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=snv, sg_first=True)
+            df_sg2_11_snv = plus_sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=snv, sg_first=True)
             dataset_transformed.append((df_sg2_11_snv, 'SG2_11_SNV'))
     
 
@@ -201,11 +201,11 @@ def make_transformations(datasets, transformations, index_spectra_start=2):
 
     if 'SG2_11_MSC' in transformations:
         if len(datasets) == 2:
-            df_sg2_11_msc = plus_sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=msc, sg_first=True)
-            df_val_sg2_11_msc = plus_sg(datasets[1], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=msc, sg_first=True)
+            df_sg2_11_msc = plus_sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=msc, sg_first=True)
+            df_val_sg2_11_msc = plus_sg(datasets[1], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=msc, sg_first=True)
             dataset_transformed.append((df_sg2_11_msc, df_val_sg2_11_msc, 'SG2_11_MSC'))
         if len(datasets) == 1:
-            df_sg2_11_msc = plus_sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=msc, sg_first=True)
+            df_sg2_11_msc = plus_sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=msc, sg_first=True)
             dataset_transformed.append((df_sg2_11_msc, 'SG2_11_MSC'))
 
 
@@ -235,11 +235,11 @@ def make_transformations(datasets, transformations, index_spectra_start=2):
 
     if 'AREA_NORM_SG2_11' in transformations:
         if len(datasets) == 2:
-            df_normalize_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=area_norm, sg_first=False)
-            df_val_normalize_sg2_11 = plus_sg(datasets[1], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=area_norm, sg_first=False)
+            df_normalize_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=area_norm, sg_first=False)
+            df_val_normalize_sg2_11 = plus_sg(datasets[1], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=area_norm, sg_first=False)
             dataset_transformed.append((df_normalize_sg2_11, df_val_normalize_sg2_11, 'AREA_NORM_SG2_11'))
         if len(datasets) == 1:
-            df_normalize_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=area_norm, sg_first=False)
+            df_normalize_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=area_norm, sg_first=False)
             dataset_transformed.append((df_normalize_sg2_11, 'AREA_NORM_SG2_11'))
     
 
@@ -257,11 +257,11 @@ def make_transformations(datasets, transformations, index_spectra_start=2):
 
     if 'MSC_SG2_11' in transformations:
         if len(datasets) == 2:
-            df_msc_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=msc, sg_first=False)
-            df_val_msc_sg2_11 = plus_sg(datasets[1], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=msc, sg_first=False)
+            df_msc_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=msc, sg_first=False)
+            df_val_msc_sg2_11 = plus_sg(datasets[1], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=msc, sg_first=False)
             dataset_transformed.append((df_msc_sg2_11, df_val_msc_sg2_11, 'MSC_SG2_11'))
         if len(datasets) == 1:
-            df_msc_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, spectra_start=index_spectra_start, transformation=msc, sg_first=False)
+            df_msc_sg2_11 = plus_sg(datasets[0], differentiation=2, window_size=11, polynominal_order=2, spectra_start=index_spectra_start, transformation=msc, sg_first=False)
             dataset_transformed.append((df_msc_sg2_11, 'MSC_SG2_11'))
 
     
