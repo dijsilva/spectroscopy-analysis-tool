@@ -32,22 +32,27 @@ else:
 #df = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep-eb_calibration.csv', sep=';', decimal=',')
 #df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep_for_prediction.csv', sep=';', decimal=',')
 df = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/bruno_250_divisao_bruno_sgr.csv', sep=';', decimal=',')
-#df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/bruno_100_divisao_bruno_sgr.csv', sep=';', decimal=',')
+df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/bruno_100_divisao_bruno_sgr.csv', sep=';', decimal=',')
 
+
+for i in range(1, 21):
+    rf = PLSR(df, components=i, cross_validation_type='loo', dataset_validation=df_val)
+    rf.create_model()
+    print(rf.metrics['validation']['R2'])
 
 
 # df = make_average(df, 2, 2)
 # df_val = make_average(df_val, 2, 2)
 
-print('Fazendo transformações... ')
-transformations = make_transformations([df], ['msc'], 2)
-print('Ok')
+#print('Fazendo transformações... ')
+#transformations = make_transformations([df, df_val], ['all'], 2)
+#print('Ok')
 # TRANSFORMAÇÕES
 
-results = np.zeros((len(transformations), 7))
-results[:] = np.nan
+#results = np.zeros((len(transformations), 7))
+#results[:] = np.nan
 
-df_results = pd.DataFrame(results)
+#df_results = pd.DataFrame(results)
 
 """
 print('Começando a criar os modelos...')
