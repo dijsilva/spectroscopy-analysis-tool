@@ -14,21 +14,22 @@ def make_average(dataset, number_of_repetions, start_spectra):
 
     if number_of_repetions <= 0:
         raise ValueError('The number_of_repetions cannot be negative.')
+
+    df = dataset.copy()
     
-    n_samples = dataset.shape[0]
+    n_samples = df.shape[0]
 
     #X_average = pd.DataFrame()
-    X_average = pd.DataFrame(np.zeros((int(n_samples / number_of_repetions), dataset.shape[1])))
+    X_average = pd.DataFrame(np.zeros((int(n_samples / number_of_repetions), df.shape[1])))
 
-    cont = 0
-    for index in list(range(0, n_samples, number_of_repetions)):
-        X_average.iloc[cont, start_spectra :] = dataset.iloc[index : index + number_of_repetions, start_spectra :].mean(axis=0).values
-        X_average.iloc[cont, : start_spectra] = dataset.iloc[index, : start_spectra].values
-        cont += 1
+    new_positions  = list(range(0, n_samples, number_of_repetions))
+    for pos, index in enumerate(new_positions):
+        X_average.iloc[pos, start_spectra :] = df.iloc[index : index + number_of_repetions, start_spectra :].mean(axis=0).values
+        X_average.iloc[pos, : start_spectra] = df.iloc[index, : start_spectra].values
 
-    X_average.index = list(range(0, n_samples, number_of_repetions))
-    X_average.columns = dataset.columns
-    X_average.iloc[:,0] = X_average.iloc[:,0].astype('int')
+    X_average.index = new_positions
+    X_average.columns = df.columns
+    X_average.iloc[:,0] = X_average.iloc[:,0].astype(df.iloc[:,0].dtype)
     
     return X_average
         
