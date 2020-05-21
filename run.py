@@ -34,11 +34,8 @@ else:
 df = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/bruno_250_divisao_bruno_sgr.csv', sep=';', decimal=',')
 df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/bruno_100_divisao_bruno_sgr.csv', sep=';', decimal=',')
 
-
-for i in range(1, 21):
-    rf = PLSR(df, components=i, cross_validation_type='loo', dataset_validation=df_val)
-    rf.create_model()
-    print(rf.metrics['validation']['R2'])
+rf = PLSR(df, components=19, cross_validation_type='loo', dataset_validation=df_val)
+rf.create_model()
 
 
 # df = make_average(df, 2, 2)

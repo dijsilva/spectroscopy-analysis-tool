@@ -8,6 +8,8 @@ def cross_validation(model, x, y, cv, correlation_based=True):
     y_cv = cross_val_predict(model, x, y, cv=cv)
     if len(y_cv.shape) == 2:
         y_cv = [i[0] for i in y_cv]
+    
+    bias = (y_cv - y).sum() / y.shape[0]
 
     r_correlation = np.corrcoef(y, y_cv)[0][1]
     
@@ -19,7 +21,7 @@ def cross_validation(model, x, y, cv, correlation_based=True):
 
     predicted_values = np.array(y_cv)
 
-    return (r_correlation, r2, rmse, predicted_values)
+    return (r_correlation, r2, rmse, bias, predicted_values)
 
 def classifier_cross_validation(model, x, y, cv):
     y_cv = cross_val_predict(model, x, y, cv=cv)
@@ -45,6 +47,8 @@ def external_validation(model, x, y, correlation_based=True):
         y_val = [i[0] for i in y_val]
     
     r_correlation = np.corrcoef(y, y_val)[0][1]
+
+    bias = (y_val - y).sum() / y.shape[0]
     
     if correlation_based == True:
         r2_ve = r_correlation ** 2
@@ -54,7 +58,7 @@ def external_validation(model, x, y, correlation_based=True):
 
     predicted_values = np.array(y_val)
 
-    return (r_correlation, r2_ve, rmse_ve, predicted_values)
+    return (r_correlation, r2_ve, rmse_ve, bias, predicted_values)
 
 
 def classifier_external_validation(model, x, y):
