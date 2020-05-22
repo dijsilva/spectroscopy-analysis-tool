@@ -85,7 +85,7 @@ class PLSR():
     def search_hyperparameters(self, components=[1, 21], n_processors=1, verbose=0, scoring='neg_root_mean_squared_error'):
         
         step_value = lambda list_of_values: 1 if (len(list_of_values) < 3) else list_of_values[2]
-        components = [int(x) for x in np.arange(start = components[0], stop = components[1], step = step_value(components))]
+        components = np.arange(start = components[0], stop = components[1], step = step_value(components))
         
         grid = { "n_components": components }
 
@@ -158,6 +158,54 @@ class PLSR():
             coefs = np.insert(coefs, 0, self.model._intercept)    
 
         return coefs
+    
+    def test_many_components(self, components=[1,20], target='cv'):
+
+        if not isinstance(components, list):
+            raise ValueError('components should be a list of integers.')
+
+        step_value = lambda list_of_values: 1 if (len(list_of_values) < 3) else list_of_values[2]
+        components_for_test = [int(x) for x in np.arange(start=components[0], stop=components[1], step=step_value(components))]
+
+        rmse_cv = []
+        r2_cv = []
+        rmse_ve = []
+        r2_ve = []
+        default = self.components
+
+        for comp in components_for_test:
+
+            self.components = comp
+
+            if target=='cv':
+                self.calibrate()
+                self.cross_validate()
+                rmse_cv.append(self.metrics['cross_validation']['RMSE'])
+                r2_cv.append(self.metrics['cross_validation']['R2'])
+            elif target=='pred':
+                self.create_model()
+                rmse_cv.append(self.metrics['cross_validation']['RMSE'])
+                r2_cv.append(self.metrics['cross_validation']['R2'])
+                rmse_ve.append(self.metrics['validation']['RMSE'])
+                r2_ve.append(self.metrics['validation']['R2'])
+            else:
+                raise ValueError("target should be 'cv' or 'pred'.")
+        
+        self.components = default
+        cross_validation = {'RMSE': rmse_cv, 'R2': r2_cv}
+
+        
+        if target == 'pred':
+            validation = {'RMSE': rmse_ve, 'R2': r2_ve}
+            performance = {'cross_validation': cross_validation, 'validation': validation, 'components': components_for_test }
+        
+        else:
+            performance = {'cross_validation': cross_validation, 'components': components_for_test }
+
+
+        self._perfomance = performance
+            
+                
     
     def create_model(self):
         
