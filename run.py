@@ -16,7 +16,7 @@ import numpy as np
 
 #VARIABLES
 FOLDER_BASE = '/home/dsilva/testes_ml/models'
-ANALYSIS = 'PLSR_SGR_divisao_bruno'
+ANALYSIS = 'PLSR_cellulose_divisao_bruno'
 save_results = True
 
 if FOLDER_BASE[-1] != '/':
@@ -30,8 +30,10 @@ else:
 
 #df = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep-eb_calibration.csv', sep=';', decimal=',')
 #df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep_for_prediction.csv', sep=';', decimal=',')
-df = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/divisao_bruno/250_cellulose.csv', sep=';', decimal=',')
-df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/divisao_bruno/100_cellulose.csv', sep=';', decimal=',')
+df = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/divisao_bruno/250_sgr.csv', sep=';', decimal=',')
+df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/divisao_bruno/100_sgr.csv', sep=';', decimal=',')
+
+transformations = make_transformations([df, df_val], ['snv', 'sg2_25', 'snv_sg2_25', 'snv_sg2_11'], 2)
 
 #df = make_average(df, 2, 2)
 #df_val = make_average(df_val, 2, 2)
