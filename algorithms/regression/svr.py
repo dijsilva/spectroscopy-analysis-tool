@@ -73,8 +73,9 @@ class SVMRegression():
             raise ValueError("The cross_validation_type should be a positive integer for k-fold method ou 'loo' for leave one out cross validation.")
     
 
-    def search_hyperparameters(self, kernel = ['rbf'], degree = [ 3 ], gamma=[ 'scale' ], coef0=[ 0.0, 0.1 ], epsilon=[ 0.1, 2.0 ], tol = [1e-3, 1e-10], 
-                               max_iter = [ -1 ], n_processors = 1, verbose = 0, scoring = 'neg_root_mean_squared_error'):
+    def search_hyperparameters(self, kernel = ['rbf'], degree = [ 3 ], gamma=[ 'scale' ], coef0=[ 0.0, 0.1 ], epsilon=[ 0.1, 2.0 ], 
+                               tol = [1e-3, 1e-10], max_iter = [ -1 ], n_processors = 1, verbose = 0, 
+                               scoring = 'neg_root_mean_squared_error'):
         
         step_value = lambda list_of_values: 0.5 if (len(list_of_values) < 3) else list_of_values[2]
         epsilon = [round(x, 3) for x in np.arange(start = epsilon[0], stop = epsilon[1], step = step_value(epsilon))]
@@ -114,6 +115,7 @@ class SVMRegression():
 
         y_cal_predict = self.model.predict(self._xCal)
 
+        print(y_cal_predict)
         r_correlation = np.corrcoef(self._yCal, y_cal_predict)[0][1]
         r2_cal = self.model.score(self._xCal, self._yCal)
         rmse = mean_squared_error(self._yCal, y_cal_predict, squared=False)
@@ -128,22 +130,22 @@ class SVMRegression():
 
     def cross_validate(self):
         
-        r_correlation, r2_cv, rmse_cv, predicted_values = cross_validation(self.model, self._xCal, self._yCal, self._cv, correlation_based=False)
+        r_correlation, r2_cv, rmse_cv, bias, predicted_values = cross_validation(self.model, self._xCal, self._yCal, self._cv, correlation_based=False)
 
         method = 'Leave One Out'
         if isinstance(self._cv, KFold):
             method = "{}-fold".format(self._cv.n_splits)
         
-        cross_validation_metrics = {'R': r_correlation, 'R2': r2_cv, 'RMSE': rmse_cv, 'method': method, 'predicted_values': predicted_values }
+        cross_validation_metrics = {'R': r_correlation, 'R2': r2_cv, 'RMSE': rmse_cv, 'bias': bias, 'method': method, 'predicted_values': predicted_values }
         
         self.metrics['cross_validation'] = cross_validation_metrics
     
     def validate(self):
 
-        r_correlation, r2_ve, rmse_ve, predicted_values = external_validation(self.model, self._xVal, self._yVal, correlation_based=False)
+        r_correlation, r2_ve, rmse_ve, bias, predicted_values = external_validation(self.model, self._xVal, self._yVal, correlation_based=False)
 
         nsamples = self._xVal.shape[0]
-        validation = {'R': r_correlation, 'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values}
+        validation = {'R': r_correlation, 'R2': r2_ve, 'RMSE': rmse_ve, 'bias': bias, 'n_samples': nsamples, 'predicted_values': predicted_values}
 
         self.metrics['validation'] = validation
 
