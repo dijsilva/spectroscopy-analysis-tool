@@ -4,9 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.ticker import MaxNLocator
 
 
-def save_results_of_model(model_instance, path, name="results", out_table=False, plots=False, coefficients_of_model='plsr'):
+def save_results_of_model(model_instance, path, name="results", out_table=False, plots=False, out_performance=False, coefficients_of_model='plsr'):
     if path[-1] != '/':
             path += '/'
         
@@ -116,29 +117,98 @@ def save_results_of_model(model_instance, path, name="results", out_table=False,
                 ax4.plot(model_instance._xCal.columns.astype('int'), model_instance._xCal.T.values)
                 ax4.set_ylabel('Absorbance')
                 ax4.set_xlabel('Wavelength')
-                ax4.set_title('Plotline - Calibration')
+                ax4.set_title('Spectra of calibration data')
             except:
                 ax4.plot([-1,1], c='black')
                 ax4.plot([1, -1], c='black')
                 ax4.axis('off')
-                ax4.set_title('Plotline not performed')
+                ax4.set_title('Plot not performed')
             
             ax5 = fig2.add_subplot(gs[1, :])
             try:
                 ax5.plot(model_instance._xVal.columns.astype('int'), model_instance._xVal.T.values)
                 ax5.set_ylabel('Absorbance')
                 ax5.set_xlabel('Wavelength')
-                ax5.set_title('Plotline - Validation')
+                ax5.set_title('Spectra of prediction data')
             except:
                 ax5.plot([-1,1], c='black')
                 ax5.plot([1, -1], c='black')
                 ax5.axis('off')
-                ax5.set_title('Plotline not performed')
+                ax5.set_title('Plot not performed')
             
             plt.tight_layout(pad=2.0)  # saves the current figure into a pdf page
             pdf.savefig(fig2)
-            # pdf.close()
             plt.close()
+
+
+
+
+
+            if out_performance == True:
+
+                fig3 = plt.figure(figsize=(16, 12), dpi=100)
+                plt.rc('font', size=16)
+                gs = gridspec.GridSpec(2,2)
+
+                ax6 = fig3.add_subplot(gs[0, 0])
+                try:
+                    ax6.plot(model_instance._perfomance['components'], model_instance._perfomance['cross_validation']['RMSE'])
+                    ax6.xaxis.set_major_locator(MaxNLocator(integer=True))
+                    ax6.set_ylabel('RMSE')
+                    ax6.set_xlabel('Components')
+                    ax6.set_title('RMSE of Cross-validation')
+                except:
+                    ax6.plot([-1,1], c='black')
+                    ax6.plot([1, -1], c='black')
+                    ax6.axis('off')
+                    ax6.set_title('performance of cv not analyzed')
+                
+
+                ax7 = fig3.add_subplot(gs[0, 1])
+                try:
+                    ax7.plot(model_instance._perfomance['components'], model_instance._perfomance['cross_validation']['R2'])
+                    ax7.xaxis.set_major_locator(MaxNLocator(integer=True))
+                    ax7.set_ylabel('R^2')
+                    ax7.set_xlabel('Components')
+                    ax7.set_title('R^2 of Cross-validation')
+                except:
+                    ax7.plot([-1,1], c='black')
+                    ax7.plot([1, -1], c='black')
+                    ax7.axis('off')
+                    ax7.set_title('performance of cv not analyzed')
+                
+
+                ax8 = fig3.add_subplot(gs[1, 0])
+                try:
+                    ax8.plot(model_instance._perfomance['components'], model_instance._perfomance['validation']['RMSE'])
+                    ax8.xaxis.set_major_locator(MaxNLocator(integer=True))
+                    ax8.set_ylabel('RMSE')
+                    ax8.set_xlabel('Components')
+                    ax8.set_title('RMSE of prediction')
+                except:
+                    ax8.plot([-1,1], c='black')
+                    ax8.plot([1, -1], c='black')
+                    ax8.axis('off')
+                    ax8.set_title('performance of prediction not analyzed')
+                
+
+                ax9 = fig3.add_subplot(gs[1, 1])
+                try:
+                    ax9.plot(model_instance._perfomance['components'], model_instance._perfomance['validation']['R2'])
+                    ax9.xaxis.set_major_locator(MaxNLocator(integer=True))
+                    ax9.set_ylabel('R^2')
+                    ax9.set_xlabel('Components')
+                    ax9.set_title('R^2 of prediction')
+                except:
+                    ax9.plot([-1,1], c='black')
+                    ax9.plot([1, -1], c='black')
+                    ax9.axis('off')
+                    ax9.set_title('performance of prediction not analyzed')
+                
+                plt.tight_layout(pad=2.0)  # saves the current figure into a pdf page
+                pdf.savefig(fig3)
+                plt.close()
+
     
     if out_table == True:
         try:
@@ -158,4 +228,5 @@ def save_results_of_model(model_instance, path, name="results", out_table=False,
             cross_validation_prediction.to_csv(f"{path}{name}/predictions_CV.csv", sep=';', decimal=',')
         except:
             pass
+
             

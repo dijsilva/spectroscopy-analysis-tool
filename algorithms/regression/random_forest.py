@@ -134,22 +134,22 @@ class RandomForest():
 
     def cross_validate(self):
         
-        r_correlation, r2_cv, rmse_cv, predicted_values = cross_validation(self.model, self._xCal, self._yCal, self._cv, correlation_based=False)
+        r_correlation, r2_cv, rmse_cv, bias, predicted_values = cross_validation(self.model, self._xCal, self._yCal, self._cv, correlation_based=False)
 
         method = 'Leave One Out'
         if isinstance(self._cv, KFold):
             method = "{}-fold".format(self._cv.n_splits)
         
-        cross_validation_metrics = {'R': r_correlation, 'R2': r2_cv, 'RMSE': rmse_cv, 'method': method, 'predicted_values': predicted_values }
+        cross_validation_metrics = {'R': r_correlation, 'R2': r2_cv, 'RMSE': rmse_cv, 'bias': bias, 'method': method, 'predicted_values': predicted_values }
         
         self.metrics['cross_validation'] = cross_validation_metrics
     
     def validate(self):
 
-        r_correlation, r2_ve, rmse_ve, predicted_values = external_validation(self.model, self._xVal, self._yVal, correlation_based=False)
+        r_correlation, r2_ve, rmse_ve, bias, predicted_values = external_validation(self.model, self._xVal, self._yVal, correlation_based=False)
 
         nsamples = self._xVal.shape[0]
-        validation = {'R': r_correlation, 'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values}
+        validation = {'R': r_correlation, 'R2': r2_ve, 'RMSE': rmse_ve, 'bias': bias, 'n_samples': nsamples, 'predicted_values': predicted_values}
 
         self.metrics['validation'] = validation
 
