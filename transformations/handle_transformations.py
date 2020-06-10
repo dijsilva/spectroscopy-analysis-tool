@@ -30,6 +30,9 @@ def make_transformations(datasets, transformations, index_spectra_start=2):
         dataset_transformed.append((datasets[0], datasets[1], 'RAW'))
     if len(datasets) == 1:
         dataset_transformed.append((datasets[0], 'RAW'))
+
+    if 'RAW' in transformations:
+        return dataset_transformed
    
     if 'SNV' in transformations:
         if len(datasets) == 2:

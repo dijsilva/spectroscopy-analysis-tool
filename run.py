@@ -16,8 +16,8 @@ import numpy as np
 
 #VARIABLES
 FOLDER_BASE = '/home/dsilva/testes_ml/models'
-ANALYSIS = 'PLSR_cellulose_divisao_bruno'
-save_results = True
+ANALYSIS = 'Carol_Joint-EB_wrong'
+save_results = False
 
 if FOLDER_BASE[-1] != '/':
     FOLDER_BASE += '/'
@@ -30,16 +30,14 @@ else:
 
 #df = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep-eb_calibration.csv', sep=';', decimal=',')
 #df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep_for_prediction.csv', sep=';', decimal=',')
-df = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/divisao_bruno/250_sgr.csv', sep=';', decimal=',')
-df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/divisao_bruno/100_sgr.csv', sep=';', decimal=',')
-
-transformations = make_transformations([df, df_val], ['snv', 'sg2_25', 'snv_sg2_25', 'snv_sg2_11'], 2)
+cal = pd.read_csv('/home/dsilva/testes_ml/dataset/converted_arff/joint.csv', sep=';', decimal=',')
+val = pd.read_csv('/home/dsilva/testes_ml/dataset/converted_arff/eb.csv', sep=';', decimal=',')
 
 #df = make_average(df, 2, 2)
 #df_val = make_average(df_val, 2, 2)
-"""
+
 print('Fazendo transformações... ')
-transformations = make_transformations([df, df_val], ['all'], 2)
+transformations = make_transformations([cal, val], ['raw'], 2)
 print(' Ok')
 
 results = np.zeros((len(transformations), 9))
@@ -50,7 +48,7 @@ print('Criando os modelos...')
 for pos, transformation in enumerate(transformations):
     rf = PLSR(transformation[0], components=1, cross_validation_type=10, dataset_validation=transformation[1])
     rf.test_many_components(components=[1,21], target='pred')
-    rf.search_hyperparameters(n_processors=-1, verbose=1, components=[1, 21, 1])
+    #rf.search_hyperparameters(n_processors=-1, verbose=1, components=[1, 21, 1])
     rf.create_model()
 
     if save_results == True:
@@ -84,4 +82,4 @@ for pos, transformation in enumerate(transformations):
 
 
 df_results.columns = ['TRANSFORMATION', 'R2_CAL', 'RMSE_CAL', 'R2_CV', 'RMSE_CV', 'BIAS_CV', 'R2_PRED', 'RMSE_PRED', 'BIAS_PRED']
-df_results.to_csv(f"{FOLDER}/results_{ANALYSIS}.csv", sep=';', decimal=',', index=False)"""
+df_results.to_csv(f"{FOLDER}/results_{ANALYSIS}.csv", sep=';', decimal=',', index=False)
