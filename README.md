@@ -15,5 +15,5 @@ A set of algorithms for the purpose of performing sample predictions and classif
 ### Classification
 - Principal component analysis + linear discrminant analysis (PCA-LDA)
 
-## Some details
+### Some details
 When the algorithms in this tool have the search_hypermatameters method, that method can be used to search for the best set of hyperparameters based on the tool [GridSearchCV](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html) of sklearn library.
