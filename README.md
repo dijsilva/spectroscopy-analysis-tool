@@ -2,10 +2,13 @@
 
 A set of algorithms for the purpose of performing sample predictions and classifications using spectroscopy data
 
-## At the moment 
+## Algorithms that can already be used: 
 
 ### Regression
-Some algorithms can be used, such as PLS, SVM regression, principal component regression and Random Forest.
+    - Partial least squares regression (PLS)
+    - Support Vector Machine regression (SVR)
+    - Principal Component Regression (PCR)
+    - Random Forest.
 
 ### Classification
-For classifcation, PCA-LDA can be used.
+    - Principal component analysis + linear discrminant analysis (PCA-LDA)
