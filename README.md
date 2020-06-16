@@ -5,7 +5,7 @@ A set of algorithms for the purpose of performing sample predictions and classif
 ## Algorithms that can already be used: 
 
 ### Regression
-    - Partial least squares regression (PLS)
+- Partial least squares regression (PLS)
     - Support Vector Machine regression (SVR)
     - Principal Component Regression (PCR)
     - Random Forest.
