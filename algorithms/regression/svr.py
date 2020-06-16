@@ -114,8 +114,6 @@ class SVMRegression():
         self.model.fit(self._xCal, self._yCal)
 
         y_cal_predict = self.model.predict(self._xCal)
-
-        print(y_cal_predict)
         r_correlation = np.corrcoef(self._yCal, y_cal_predict)[0][1]
         r2_cal = self.model.score(self._xCal, self._yCal)
         rmse = mean_squared_error(self._yCal, y_cal_predict, squared=False)
