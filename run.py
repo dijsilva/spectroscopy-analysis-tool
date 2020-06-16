@@ -14,10 +14,17 @@ import numpy as np
 
 
 
-#VARIABLES
+# INPUT VARIABLES
 FOLDER_BASE = '/home/dsilva/testes_ml/models'
 ANALYSIS = 'BrunoCarol_EB'
 save_results = True
+MAKE_AVERAGE = False
+
+cal = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno_carol/calibration.csv', sep=';', decimal=',')
+val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_corrigido/eb.csv', sep=';', decimal=',')
+
+
+
 
 if FOLDER_BASE[-1] != '/':
     FOLDER_BASE += '/'
@@ -28,11 +35,9 @@ if not os.path.exists(f"{FOLDER_BASE}{ANALYSIS}"):
 else:
     FOLDER = f"{FOLDER_BASE}{ANALYSIS}"
 
-cal = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno_carol/calibration.csv', sep=';', decimal=',')
-val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_corrigido/eb.csv', sep=';', decimal=',')
-
-#df = make_average(df, 2, 2)
-val = make_average(val, 2, 2)
+if MAKE_AVERAGE == True:
+    df = make_average(df, 2, 2)
+    val = make_average(val, 2, 2)
 
 print('Fazendo transformações... ')
 transformations = make_transformations([cal, val], ['all'], 2)
