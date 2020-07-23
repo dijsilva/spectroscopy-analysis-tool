@@ -12,12 +12,15 @@ import pandas as pd
 import numpy as np
 
 
-
-
-#VARIABLES
+# INPUT VARIABLES
 FOLDER_BASE = '/home/dsilva/testes_ml/models'
-ANALYSIS = 'PLSR_cellulose_divisao_bruno'
+ANALYSIS = 'RF_Bruno_Carol'
 save_results = True
+MAKE_AVERAGE = True
+
+cal = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno_carol/calibration.csv', sep=';', decimal=',')
+val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_corrigido/ep.csv', sep=';', decimal=',')
+
 
 if FOLDER_BASE[-1] != '/':
     FOLDER_BASE += '/'
@@ -28,18 +31,12 @@ if not os.path.exists(f"{FOLDER_BASE}{ANALYSIS}"):
 else:
     FOLDER = f"{FOLDER_BASE}{ANALYSIS}"
 
-#df = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep-eb_calibration.csv', sep=';', decimal=',')
-#df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_correct/ep_for_prediction.csv', sep=';', decimal=',')
-df = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/divisao_bruno/250_sgr.csv', sep=';', decimal=',')
-df_val = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno/divisao_bruno/100_sgr.csv', sep=';', decimal=',')
+if MAKE_AVERAGE == True:
+    cal = make_average(cal, 2, 2)
+    val = make_average(val, 2, 2)
 
-transformations = make_transformations([df, df_val], ['snv', 'sg2_25', 'snv_sg2_25', 'snv_sg2_11'], 2)
-
-#df = make_average(df, 2, 2)
-#df_val = make_average(df_val, 2, 2)
-"""
 print('Fazendo transformações... ')
-transformations = make_transformations([df, df_val], ['all'], 2)
+transformations = make_transformations([cal, val], ['raw'], 2)
 print(' Ok')
 
 results = np.zeros((len(transformations), 9))
@@ -48,35 +45,54 @@ df_results = pd.DataFrame(results)
 
 print('Criando os modelos...')
 for pos, transformation in enumerate(transformations):
-    rf = PLSR(transformation[0], components=1, cross_validation_type=10, dataset_validation=transformation[1])
-    rf.test_many_components(components=[1,21], target='pred')
-    rf.search_hyperparameters(n_processors=-1, verbose=1, components=[1, 21, 1])
-    rf.create_model()
+
+    # PLSR
+    # model = PLSR(transformation[0], components=1, cross_validation_type=10, 
+    #              dataset_validation=transformation[1])
+    # model.test_many_components(components=[1,21], target='pred')
+    # model.search_hyperparameters(n_processors=-1, verbose=1, components=[1, 21, 1])
+    # model.create_model()
+
+
+    # Random Forest
+    model = RandomForest(transformation[0], estimators=1000, cross_validation_type=10, 
+            dataset_validation=transformation[1], rf_bootstrap = True, rf_max_features=0.8, rf_min_samples_leaf=20)
+    model.search_hyperparameters(n_processors=3, verbose=1, estimators=[500, 601, 100], 
+            oob_score=[True], bootstrap = [True], max_features=[0.4, 0.7, 0.9], min_samples_leaf=[15, 20])
+    model.create_model()
+
+    # model = SVMRegression(transformation[0], type_of_kernel='rbf', 
+    #                        cross_validation_type='loo', 
+    #                        dataset_validation=transformation[1])
+    # model.search_hyperparameters(n_processors=3, epsilon=[ 0.1, 2.0, 0.2 ], 
+    #                              verbose=1, kernel = ['rbf'], gamma=[100])
 
     if save_results == True:
-        save_results_of_model(rf, path=FOLDER, name=transformation[2], plots=True, out_table=True, out_performance=True, coefficients_of_model='plsr')
+        save_results_of_model(model, path=FOLDER, name=transformation[2], 
+                            plots=True, out_table=True, out_performance=True, 
+                            coefficients_of_model='random_forest')
 
 
     try:
         df_results.iloc[pos, 0] = transformation[2]
-        df_results.iloc[pos, 1] = rf.metrics['calibration']['R2']
-        df_results.iloc[pos, 2] = rf.metrics['calibration']['RMSE']
+        df_results.iloc[pos, 1] = model.metrics['calibration']['R2']
+        df_results.iloc[pos, 2] = model.metrics['calibration']['RMSE']
     except:
         raise ValueError('a error occurred with data of calibration')
 
 
     try:
-        df_results.iloc[pos, 3] = rf.metrics['cross_validation']['R2']
-        df_results.iloc[pos, 4] = rf.metrics['cross_validation']['RMSE']
-        df_results.iloc[pos, 5] = rf.metrics['cross_validation']['bias']
+        df_results.iloc[pos, 3] = model.metrics['cross_validation']['R2']
+        df_results.iloc[pos, 4] = model.metrics['cross_validation']['RMSE']
+        df_results.iloc[pos, 5] = model.metrics['cross_validation']['bias']
     except:
         pass
 
 
     try:
-        df_results.iloc[pos, 6] = rf.metrics['validation']['R2']
-        df_results.iloc[pos, 7] = rf.metrics['validation']['RMSE']
-        df_results.iloc[pos, 8] = rf.metrics['validation']['bias']
+        df_results.iloc[pos, 6] = model.metrics['validation']['R2']
+        df_results.iloc[pos, 7] = model.metrics['validation']['RMSE']
+        df_results.iloc[pos, 8] = model.metrics['validation']['bias']
     except:
         pass
 
@@ -84,4 +100,4 @@ for pos, transformation in enumerate(transformations):
 
 
 df_results.columns = ['TRANSFORMATION', 'R2_CAL', 'RMSE_CAL', 'R2_CV', 'RMSE_CV', 'BIAS_CV', 'R2_PRED', 'RMSE_PRED', 'BIAS_PRED']
-df_results.to_csv(f"{FOLDER}/results_{ANALYSIS}.csv", sep=';', decimal=',', index=False)"""
+df_results.to_csv(f"{FOLDER}/results_{ANALYSIS}.csv", sep=';', decimal=',', index=False)

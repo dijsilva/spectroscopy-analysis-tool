@@ -7,19 +7,21 @@ import numpy as np
 from utils import cross_validation, external_validation
 
 class RandomForest():
-    def __init__(self, dataset, estimators=100, cross_validation_type='loo', split_for_validation=None, dataset_validation=None, rf_random_state=1, 
-                max_features_rf='auto', rf_max_depth=None, rf_min_samples_leaf=1, rf_min_samples_split=2, rf_Bootstrap=True, rf_oob_score=False):
+    def __init__(self, dataset, estimators=100, cross_validation_type='loo', 
+                split_for_validation=None, dataset_validation=None, rf_random_state=1, 
+                rf_max_features='auto', rf_max_depth=None, rf_min_samples_leaf=1, 
+                rf_min_samples_split=2, rf_bootstrap=True, rf_oob_score=False):
         self.dataset = dataset
         self.n_estimators = estimators
         self.cross_validation_type = cross_validation_type
         self.split_for_validation = split_for_validation
         self.dataset_validation = dataset_validation
         self.rf_random_state = rf_random_state
-        self.max_features = max_features_rf
+        self.max_features = rf_max_features
         self.max_depth = rf_max_depth
         self.min_samples_leaf = rf_min_samples_leaf
         self.min_samples_split = rf_min_samples_split
-        self.bootstrap = rf_Bootstrap
+        self.bootstrap = rf_bootstrap
         self.oob_score = rf_oob_score
 
         self._xCal = pd.DataFrame()
@@ -72,13 +74,17 @@ class RandomForest():
             raise ValueError("The cross_validation_type should be a positive integer for k-fold method ou 'loo' for leave one out cross validation.")
     
 
-    def search_hyperparameters(self, estimators=[100, 1010], max_features=['sqrt'], max_depth=[None], min_samples_split=[2], min_samples_leaf=[1], 
-                               bootstrap=[True], n_processors=1, verbose=0, oob_score=[False], scoring='neg_root_mean_squared_error'):
+    def search_hyperparameters(self, estimators=[100, 1010], max_features=['sqrt'], 
+                               max_depth=[None], min_samples_split=[2], min_samples_leaf=[5], 
+                               bootstrap=[True], n_processors=1, verbose=0, 
+                               oob_score=[False], scoring='neg_root_mean_squared_error'):
         
         stop_value = lambda list_of_values: 10 if (len(list_of_values) < 3) else list_of_values[2]
-        n_estimators = [int(x) for x in np.arange(start = estimators[0], stop = estimators[1], step = stop_value(estimators))]
+        n_estimators = [int(x) for x in np.arange(start = estimators[0], stop = estimators[1], 
+                       step = stop_value(estimators))]
         if None not in max_depth:
-            max_depth = [int(x) for x in np.arange(max_depth[0], max_depth[1], step = stop_value(max_depth))]
+            max_depth = [int(x) for x in np.arange(max_depth[0], max_depth[1], 
+                        step = stop_value(max_depth))]
             max_depth.append(None)
 
         random_grid = { "n_estimators": n_estimators,
@@ -92,7 +98,9 @@ class RandomForest():
     
         rf = RandomForestRegressor()
 
-        rf_random = GridSearchCV(estimator = rf, param_grid = random_grid, cv = self._cv, n_jobs = n_processors, verbose=verbose, scoring=scoring)
+        rf_random = GridSearchCV(estimator = rf, param_grid = random_grid, 
+                                cv = self._cv, n_jobs = n_processors, 
+                                verbose=verbose, scoring=scoring)
         
         if verbose == 0:
             print('Running...')
@@ -112,9 +120,14 @@ class RandomForest():
 
     def calibrate(self):
         
-        self.model = RandomForestRegressor(n_estimators=self.n_estimators, random_state=self.rf_random_state, 
-                                         max_features=self.max_features, max_depth=self.max_depth, min_samples_leaf=self.min_samples_leaf, 
-                                         min_samples_split=self.min_samples_split, bootstrap=self.bootstrap, oob_score=self.oob_score)
+        self.model = RandomForestRegressor(n_estimators=self.n_estimators, 
+                                           random_state=self.rf_random_state, 
+                                           max_features=self.max_features, 
+                                           max_depth=self.max_depth, 
+                                           min_samples_leaf=self.min_samples_leaf, 
+                                           min_samples_split=self.min_samples_split, 
+                                           bootstrap=self.bootstrap, 
+                                           oob_score=self.oob_score)
 
         self.model.fit(self._xCal, self._yCal)
 
@@ -126,7 +139,8 @@ class RandomForest():
 
         nsamples = self._xCal.shape[0]
 
-        calibration_metrics = {'n_samples': nsamples, 'R': r_correlation, 'R2': r2_cal, 'RMSE': rmse}
+        calibration_metrics = {'n_samples': nsamples, 'R': r_correlation, 
+                               'R2': r2_cal, 'RMSE': rmse}
 
         self.metrics['calibration'] = calibration_metrics  
     
@@ -134,22 +148,28 @@ class RandomForest():
 
     def cross_validate(self):
         
-        r_correlation, r2_cv, rmse_cv, bias, predicted_values = cross_validation(self.model, self._xCal, self._yCal, self._cv, correlation_based=False)
+        r_correlation, r2_cv, rmse_cv, bias, predicted_values = cross_validation(self.model, 
+                        self._xCal, self._yCal, self._cv, correlation_based=False)
 
         method = 'Leave One Out'
         if isinstance(self._cv, KFold):
             method = "{}-fold".format(self._cv.n_splits)
         
-        cross_validation_metrics = {'R': r_correlation, 'R2': r2_cv, 'RMSE': rmse_cv, 'bias': bias, 'method': method, 'predicted_values': predicted_values }
+        cross_validation_metrics = {'R': r_correlation, 'R2': r2_cv, 
+                'RMSE': rmse_cv, 'bias': bias, 'method': method, 
+                'predicted_values': predicted_values }
         
         self.metrics['cross_validation'] = cross_validation_metrics
     
     def validate(self):
 
-        r_correlation, r2_ve, rmse_ve, bias, predicted_values = external_validation(self.model, self._xVal, self._yVal, correlation_based=False)
+        r_correlation, r2_ve, rmse_ve, bias, predicted_values = external_validation(self.model, 
+                                self._xVal, self._yVal, correlation_based=False)
 
         nsamples = self._xVal.shape[0]
-        validation = {'R': r_correlation, 'R2': r2_ve, 'RMSE': rmse_ve, 'bias': bias, 'n_samples': nsamples, 'predicted_values': predicted_values}
+        validation = {'R': r_correlation, 'R2': r2_ve, 'RMSE': rmse_ve, 
+                'bias': bias, 'n_samples': nsamples, 
+                'predicted_values': predicted_values}
 
         self.metrics['validation'] = validation
 

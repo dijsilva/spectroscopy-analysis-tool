@@ -7,7 +7,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.ticker import MaxNLocator
 
 
-def save_results_of_model(model_instance, path, name="results", out_table=False, plots=False, out_performance=False, coefficients_of_model='plsr'):
+def save_results_of_model(model_instance, path, name="results", out_table=False, plots=False, out_performance=False, coefficients_of_model='random_forest'):
     if path[-1] != '/':
             path += '/'
         
