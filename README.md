@@ -1,6 +1,6 @@
 # The project is in progress...
 
-## A graphical user interface for building mathematical models with chemometrics data
+## A tool for to develop mathematical models with chemometrics data
 A set of algorithms for the purpose of performing sample predictions and classifications using spectroscopy data
 
 ### Algorithms that can already be used: 
