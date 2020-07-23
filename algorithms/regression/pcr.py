@@ -1,6 +1,6 @@
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_split
+from sklearn.model_selection import cross_val_predict, LeaveOneOut, train_test_split, GridSearchCV
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import scale
 import pandas as pd
@@ -67,6 +67,31 @@ class PCR():
         if self.fit_intercept_regression not in [True, False]:
             raise ValueError('The scale option should be a boolean.')
     
+    def search_hyperparameters(self, components=[1, 21], scoring='RMSE'):
+        
+        step_value = lambda list_of_values: 1 if (len(list_of_values) < 3) else list_of_values[2]
+        components = np.arange(start = components[0], stop = components[1], step = step_value(components))
+        
+        # grid = { "n_components": components }
+
+        _best_comp = components[0]
+        slow_error = 100000 #TODO = change the way for define this variable
+        for comp in components:
+            pca = PCA(n_components=self.components, tol=0.0000000001, random_state=self.pcr_random_state, svd_solver="full")
+            linear_regression = LinearRegression(fit_intercept=self.fit_intercept_regression)
+
+            linear_regression.fit(self._xCal, self._yCal)
+
+            y_cv = cross_val_predict(linear_regression, self._xCal, self._yCal, cv=self._cv)
+            if len(y_cv.shape) == 2:
+                y_cv = [i[0] for i in y_cv]
+            
+            rmse = mean_squared_error(self._yCal, y_cv, squared=False)
+            if rmse < slow_error:
+                slow_error = rmse
+                _best_comp = comp
+        self.components = _best_comp
+    
     
     def calibrate(self):
 
@@ -93,7 +118,7 @@ class PCR():
     
     def cross_validate(self):
 
-        r2_cv, rmse_cv, predicted_values = cross_validation(self._linear_regression, self._Xreduced, self._yCal, cv=self._cv)
+        r_correlation, r2_cv, rmse_cv, bias, predicted_values = cross_validation(self._linear_regression, self._Xreduced, self._yCal, cv=self._cv)
 
         method = 'LOO'
         if isinstance(self._cv, int):
@@ -111,7 +136,7 @@ class PCR():
 
         self._XValReduced = self._pca_val.fit_transform(scale(self._xVal, axis=1))
         
-        r2_ve, rmse_ve, predicted_values = external_validation(self._linear_regression, self._XValReduced, self._yVal)
+        r_correlation, r2_ve, rmse_ve, bias, predicted_values = external_validation(self._linear_regression, self._XValReduced, self._yVal)
         
         nsamples = self._xVal.shape[0]
         validation = {'R2': r2_ve, 'RMSE': rmse_ve, 'n_samples': nsamples, 'predicted_values': predicted_values}
