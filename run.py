@@ -12,18 +12,14 @@ import pandas as pd
 import numpy as np
 
 
-
-
 # INPUT VARIABLES
 FOLDER_BASE = '/home/dsilva/testes_ml/models'
-ANALYSIS = 'BrunoCarol_EB'
+ANALYSIS = 'RF_Bruno_Carol'
 save_results = True
-MAKE_AVERAGE = False
+MAKE_AVERAGE = True
 
 cal = pd.read_csv('/home/dsilva/testes_ml/dataset/bruno_carol/calibration.csv', sep=';', decimal=',')
-val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_corrigido/eb.csv', sep=';', decimal=',')
-
-
+val = pd.read_csv('/home/dsilva/testes_ml/dataset/carol_corrigido/ep.csv', sep=';', decimal=',')
 
 
 if FOLDER_BASE[-1] != '/':
@@ -36,11 +32,11 @@ else:
     FOLDER = f"{FOLDER_BASE}{ANALYSIS}"
 
 if MAKE_AVERAGE == True:
-    df = make_average(df, 2, 2)
+    cal = make_average(cal, 2, 2)
     val = make_average(val, 2, 2)
 
 print('Fazendo transformações... ')
-transformations = make_transformations([cal, val], ['all'], 2)
+transformations = make_transformations([cal, val], ['raw'], 2)
 print(' Ok')
 
 results = np.zeros((len(transformations), 9))
@@ -49,23 +45,32 @@ df_results = pd.DataFrame(results)
 
 print('Criando os modelos...')
 for pos, transformation in enumerate(transformations):
-    # rf = PLSR(transformation[0], components=1, cross_validation_type=10, dataset_validation=transformation[1])
-    # rf.test_many_components(components=[1,21], target='pred')
-    # rf.search_hyperparameters(n_processors=-1, verbose=1, components=[1, 21, 1])
 
-    model = RandomForest(transformation[0], estimators=100, cross_validation_type=10, dataset_validation=transformation[1])
-    #model.search_hyperparameters(n_processors=-1, verbose=1, estimators=[50, 400, 100])
+    # PLSR
+    # model = PLSR(transformation[0], components=1, cross_validation_type=10, 
+    #              dataset_validation=transformation[1])
+    # model.test_many_components(components=[1,21], target='pred')
+    # model.search_hyperparameters(n_processors=-1, verbose=1, components=[1, 21, 1])
+    # model.create_model()
 
-    # model = SVMRegression(transformation[0], type_of_kernel='rbf', cross_validation_type='loo', dataset_validation=transformation[1])
-    # model.search_hyperparameters(n_processors=3, epsilon=[ 0.1, 2.0, 0.2 ], verbose=1, kernel = ['rbf'], gamma=[100])
 
-    # model = PCR(transformation[0], components=11, cross_validation_type='loo', dataset_validation=transformation[1])
-    # model.search_hyperparameters(components=[1, 21, 1])
-
+    # Random Forest
+    model = RandomForest(transformation[0], estimators=1000, cross_validation_type=10, 
+            dataset_validation=transformation[1], rf_bootstrap = True, rf_max_features=0.8, rf_min_samples_leaf=20)
+    model.search_hyperparameters(n_processors=3, verbose=1, estimators=[500, 601, 100], 
+            oob_score=[True], bootstrap = [True], max_features=[0.4, 0.7, 0.9], min_samples_leaf=[15, 20])
     model.create_model()
 
+    # model = SVMRegression(transformation[0], type_of_kernel='rbf', 
+    #                        cross_validation_type='loo', 
+    #                        dataset_validation=transformation[1])
+    # model.search_hyperparameters(n_processors=3, epsilon=[ 0.1, 2.0, 0.2 ], 
+    #                              verbose=1, kernel = ['rbf'], gamma=[100])
+
     if save_results == True:
-        save_results_of_model(model, path=FOLDER, name=transformation[2], plots=True, out_table=True, out_performance=True, coefficients_of_model='random_forest')
+        save_results_of_model(model, path=FOLDER, name=transformation[2], 
+                            plots=True, out_table=True, out_performance=True, 
+                            coefficients_of_model='random_forest')
 
 
     try:
