@@ -13,7 +13,7 @@ def make_transformations(datasets, transformations, index_spectra_start=2):
         if not isinstance(dataset, pd.DataFrame):
             raise ValueError('dataset should be a pandas dataframe.')
 
-    ALL = ['SNV', 'MSC', 'AREA_NORM', 'SG_11', 'SG_25', 'SG2_11', 'SG2_25', 
+    ALL = ['RAW', 'SNV', 'MSC', 'AREA_NORM', 'SG_11', 'SG_25', 'SG2_11', 'SG2_25', 
            'SNV_SG11', 'SNV_SG2_11', 'SNV_SG25', 'SNV_SG2_25', 'SG11_SNV',
            'SG2_11_SNV', 'SG2_25_SNV', 'SG11_MSC', 'SG2_11_MSC', 'SG25_MSC',
            'SG2_25_MSC', 'AREA_NORM_SG2_11', 'AREA_NORM_SG2_25', 'MSC_SG2_11', 
@@ -25,15 +25,12 @@ def make_transformations(datasets, transformations, index_spectra_start=2):
     if 'ALL' in transformations:
         transformations = ALL
     
-
-    if len(datasets) == 2:
-        dataset_transformed.append((datasets[0], datasets[1], 'RAW'))
-    if len(datasets) == 1:
-        dataset_transformed.append((datasets[0], 'RAW'))
-
     if 'RAW' in transformations:
-        return dataset_transformed
-   
+        if len(datasets) == 2:
+            dataset_transformed.append((datasets[0], datasets[1], 'RAW'))
+        if len(datasets) == 1:
+            dataset_transformed.append((datasets[0], 'RAW'))
+
     if 'SNV' in transformations:
         if len(datasets) == 2:
             df_snv = snv(datasets[0], spectra_start=index_spectra_start)
