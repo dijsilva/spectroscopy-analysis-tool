@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from scipy.signal import savgol_filter
 
-def snv(dataset, spectra_start=2):
+def snv(dataset, spectra_start):
     
     """
     Apply the standard normal variate transformation.
@@ -26,7 +26,7 @@ def snv(dataset, spectra_start=2):
     return df
 
 
-def msc(dataset, spectra_start=2):
+def msc(dataset, spectra_start):
 
     """
     Apply the Multiplicative Scatter Correction transformation.
@@ -57,7 +57,7 @@ def msc(dataset, spectra_start=2):
     return df
 
 
-def area_norm(dataset, spectra_start=2):
+def area_norm(dataset, spectra_start):
     
     """
     Apply the Area Normalize.
@@ -80,7 +80,7 @@ def area_norm(dataset, spectra_start=2):
 
 
 
-def sg(dataset, differentiation, window_size, polynominal_order=4, spectra_start=2):
+def sg(dataset, differentiation, window_size, spectra_start, polynominal_order=4):
     
     """
     Apply the Savitzky-Golay filter.
@@ -122,7 +122,7 @@ def sg(dataset, differentiation, window_size, polynominal_order=4, spectra_start
 
     return df
 
-def plus_sg(dataset, sg_first, transformation, differentiation, window_size, polynominal_order=4, spectra_start=2):
+def plus_sg(dataset, sg_first, transformation, differentiation, window_size, spectra_start, polynominal_order=4):
     
     """
     Apply the Savitzky-Golay filter after apply SNV transformation.
@@ -149,9 +149,9 @@ def plus_sg(dataset, sg_first, transformation, differentiation, window_size, pol
     df = dataset.copy()
     if sg_first == True:
         df_first = sg(df, differentiation, window_size, polynominal_order, spectra_start)
-        df_transformed = transformation(df_first)
+        df_transformed = transformation(df_first, spectra_start=spectra_start)
     else:
-        df_first = transformation(df)
+        df_first = transformation(df, spectra_start=spectra_start)
         df_transformed = sg(df_first, differentiation, window_size, polynominal_order, spectra_start)
 
     return df_transformed

@@ -147,7 +147,7 @@ def make_transformations(datasets, transformations, index_spectra_start=2):
         if len(datasets) == 2:
             df_snv_sg2_25 = plus_sg(datasets[0], differentiation=2, window_size=25, spectra_start=index_spectra_start, transformation=snv, sg_first=False)
             df_val_snv_sg2_25 = plus_sg(datasets[1], differentiation=2, window_size=25, spectra_start=index_spectra_start, transformation=snv, sg_first=False)
-            dataset_transformed.append((df_snv_sg2_25, df_val_snv_sg2_25, 'SNV_SG25'))
+            dataset_transformed.append((df_snv_sg2_25, df_val_snv_sg2_25, 'SNV_S2_G25'))
         if len(datasets) == 1:
             df_snv_sg2_25 = plus_sg(datasets[0], differentiation=2, window_size=25, spectra_start=index_spectra_start, transformation=snv, sg_first=False)
             dataset_transformed.append((df_snv_sg2_25, 'SNV_SG2_25'))
