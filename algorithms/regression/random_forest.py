@@ -74,7 +74,7 @@ class RandomForest():
             raise ValueError("The cross_validation_type should be a positive integer for k-fold method ou 'loo' for leave one out cross validation.")
     
 
-    def search_hyperparameters(self, estimators=[100, 1010], max_features=['sqrt'], 
+    def search_hyperparameters(self, estimators=[100, 101], max_features=['sqrt'], 
                                max_depth=[None], min_samples_split=[2], min_samples_leaf=[5], 
                                bootstrap=[True], n_processors=1, verbose=0, 
                                oob_score=[False], scoring='neg_root_mean_squared_error'):
