@@ -1,8 +1,6 @@
-__all__ = ['make_average', 'cross_validation', 'external_validation', 
+__all__ = ['cross_validation', 'external_validation', 
            'classifier_cross_validation', 'classifier_external_validation', 
            'save_results_of_model']
-
-from utils.average import make_average
 
 # VALIDATIONS
 from utils.model_validations import cross_validation
